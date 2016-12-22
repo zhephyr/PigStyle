@@ -1,0 +1,103 @@
+﻿<div class="modal-header">
+    <button class="close pull-right" type="button" ng-click="close()"><span class="glyphicon glyphicon-remove"></span></button>
+    <h2 class="modal-title" style="color: #0000CD;">Customer Service Report - Distribution</h2>
+    <h3 class="modal-title" style="color: #0000CD;">{{storeInfos.fromDate}} - {{storeInfos.toDate}}</h3>
+</div>
+<div class="modal-body">
+    <div ng-repeat="storeInfo in storeInfos">
+        <h4 style="color: #8B0000;">Store #{{storeInfo.storeNo}}</h4>
+        <table id="transmissions" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th style="width: 31%">Transmissions by Dept</th>
+                    <th style="width: 23%"># of Trans</th>
+                    <th style="width: 23%"># of Late</th>
+                    <th style="width: 23%">% on Time</th>
+                </tr>
+            </thead>
+            <tbody ng-hide="storeInfo.transmissions == null">
+                <tr id="{{storeInfo.storeNo}}-{{trans.deptNo}}" ng-repeat="trans in storeInfo.transmissions" ng-click="showLateTrans($index, $parent.$index)">
+                    <td>{{trans.deptNo}} - {{trans.dept}}</td>
+                    <td>{{trans.numTrans}}</td>
+                    <td>{{trans.numLate}}</td>
+                    <td>{{trans.perOnTime * 100 | number : 0}}%</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr ng-hide="storeInfo.transmissions == null">
+                    <td>Totals</td>
+                    <td>{{storeInfo.transmissions.ttlTransmissions.numTrans}}</td>
+                    <td>{{storeInfo.transmissions.ttlTransmissions.numLate}}</td>
+                    <td>{{storeInfo.transmissions.ttlTransmissions.avgPerc * 100 | number : 0}}%</td>
+                </tr>
+                <tr ng-show="storeInfo.transmissions == null">
+                    <td>No Data Found</td>
+                </tr>
+            </tfoot>
+        </table>
+        <br />
+        <table id="deliveries" style="width: 100%">
+            <thead>
+                <tr>
+                    <th style="width: 31%">Deliveries by Commodity</th>
+                    <th style="width: 23%"># of Deliveries</th>
+                    <th style="width: 23%">Total Cases</th>
+                    <th style="width: 23%">Avg. Cases per Deliv</th>
+                </tr>
+            </thead>
+            <tbody ng-hide="storeInfo.deliveries == null">
+                <tr ng-repeat="deliv in storeInfo.deliveries">
+                    <td>{{deliv.desc}}</td>
+                    <td>{{deliv.numDeliveries}}</td>
+                    <td>{{deliv.ttlCases}}</td>
+                    <td>{{deliv.avgCases}}</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr ng-hide="storeInfo.deliveries == null">
+                    <td>Totals</td>
+                    <td>{{storeInfo.deliveries.ttlDeliveries.numDeliv}}</td>
+                    <td>{{storeInfo.deliveries.ttlDeliveries.caseTtl}}</td>
+                    <td>{{storeInfo.deliveries.ttlDeliveries.avgCase | number : 0}}</td>
+                </tr>
+                <tr ng-show="storeInfo.deliveries == null">
+                    <td>No Data Found</td>
+                </tr>
+            </tfoot>
+        </table>
+        <br />
+        <table id="addOns" style="width: 100%">
+            <thead>
+                <tr>
+                    <th style="width: 31%">Customer Add Ons</th>
+                    <th style="width: 23%">Calls</th>
+                    <th style="width: 23%">Total Cases</th>
+                    <th style="width: 23%"></th>
+                </tr>
+            </thead>
+            <tbody ng-hide="storeInfo.custAddOns == null">
+                <tr ng-repeat="addOn in storeInfo.custAddOns">
+                    <td>{{addOn.deptNo}} - {{addOn.dept}}</td>
+                    <td>{{addOn.numCalls}}</td>
+                    <td>{{addOn.ttlCases}}</td>
+                    <td></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr ng-hide="storeInfo.custAddOns == null">
+                    <td>Totals</td>
+                    <td>{{storeInfo.custAddOns.ttlAddOns.callTtl}}</td>
+                    <td>{{storeInfo.custAddOns.ttlAddOns.caseTtl}}</td>
+                </tr>
+                <tr ng-show="storeInfo.custAddOns == null">
+                    <td>No Data Found</td>
+                </tr>
+            </tfoot>
+        </table>
+        <br />
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-success" type="button" ng-click="requestFile()">Download Report</button>
+    <button class="btn btn-primary" type="button" ng-click="close()">Close</button>
+</div>

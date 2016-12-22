@@ -1,0 +1,384 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="InventorySearch.aspx.vb" Inherits="PigStyle.InventorySearch" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>Inventory Search</title>
+    <link href="../../../CSS/bootstrap.min.css" rel="stylesheet" />
+    <link href="../../../CSS/zoomify.css" rel="stylesheet" />
+    <link href="../../../CSS/base.css" rel="stylesheet" />
+    <link href="../../../CSS/angular-loading.css" rel="stylesheet" />
+    <script src="../../../Scripts/jquery-2.2.1.min.js"></script>
+    <script src="../../../Scripts/angular.min.js"></script>
+    <script src="../../../Scripts/angular-animate.min.js"></script>
+    <script src="../../../Scripts/angular-ui/ui-bootstrap-tpls.min.js"></script>
+    <script src="../../../Scripts/inventory-search.js"></script>
+    <script src="../../../Scripts/spin.js"></script>
+    <script src="../../../Scripts/angular-loading.js"></script>
+    <script src="../../../Scripts/zoomify.js"></script>
+    <style type="text/css">
+        .menu {
+            width: 100%;
+            border-spacing: 0px;
+            border: #4e95f4 1px solid;
+            border-radius: 5px;
+        }
+
+            .menu > tbody > tr > td, .menu > thead > tr > th {
+                padding: 7px;
+                text-align: center;
+                background: #b8d1f3;
+                background-clip: padding-box;
+            }
+
+            .menu > thead > tr {
+                -moz-border-radius: 5px;
+                -webkit-border-radius: 5px;
+                border-radius: 5px 5px 0 0;
+            }
+
+                .menu > thead > tr > th {
+                    background: #518de1;
+                    color: white;
+                }
+
+                .menu > thead > tr:first-child > th:first-child {
+                    -moz-border-radius-topleft: 5px;
+                    -webkit-border-top-left-radius: 5px;
+                    border-top-left-radius: 5px;
+                }
+
+                .menu > thead > tr:first-child > th:last-child {
+                    -moz-border-radius-topright: 5px;
+                    -webkit-border-top-right-radius: 5px;
+                    border-top-right-radius: 5px;
+                }
+
+            .menu > tbody > tr:last-child > td:first-child {
+                -moz-border-radius-bottomleft: 5px;
+                -webkit-border-bottom-left-radius: 5px;
+                border-bottom-left-radius: 5px;
+            }
+
+            .menu > tbody > tr:last-child > td:last-child {
+                -moz-border-radius-bottomright: 5px;
+                -webkit-border-bottom-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+            }
+
+        .inventory {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0px;
+            font: normal 12px/150% Arial, Helvetica, sans-serif;
+        }
+
+            .inventory > thead > tr > th,
+            .inventory > tbody > tr > td,
+            .inventory > tfoot > tr > td {
+                border: 1px solid #275420;
+            }
+
+            .inventory > thead tr {
+                -moz-border-radius: 3px;
+                -webkit-border-radius: 3px;
+                border: 1px solid #275420;
+                border-radius: 5px 5px 0 0;
+            }
+
+            .inventory > thead th {
+                background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #297C45), color-stop(0.95, #175A2E));
+                background: -moz-linear-gradient( center top, #297C45 5%, #175A2E 95%);
+                background: linear-gradient(#297C45 5%, #175A2E 95%);
+                color: #FFFFFF;
+                font-size: 15px;
+                font-weight: bold;
+                width: 50%;
+                padding: 5px;
+            }
+
+            .inventory > thead tr:first-child th:first-child {
+                -moz-border-radius-topleft: 3px;
+                -webkit-border-top-left-radius: 3px;
+                border-top-left-radius: 3px;
+            }
+
+            .inventory > thead tr:first-child th:last-child {
+                -moz-border-radius-topright: 3px;
+                -webkit-border-top-right-radius: 3px;
+                border-top-right-radius: 3px;
+            }
+
+            .inventory > tbody td {
+                color: #275420;
+                font-size: 12px;
+                font-weight: normal;
+            }
+
+            .inventory tfoot td {
+                background-color: #DFFFDE;
+                text-align: center;
+            }
+
+            .inventory > tfoot tr:last-child td:first-child {
+                -moz-border-radius-bottomleft: 3px;
+                -webkit-border-bottom-left-radius: 3px;
+                border-bottom-left-radius: 3px;
+            }
+
+            .inventory > tfoot tr:last-child td:last-child {
+                -moz-border-radius-bottomright: 3px;
+                -webkit-border-bottom-right-radius: 3px;
+                border-bottom-right-radius: 3px;
+            }
+
+            .inventory .pagination {
+                display: inline-table;
+                margin: 5px;
+            }
+
+        .box {
+            float: left;
+            position: relative;
+            width: 30%;
+            padding-bottom: 20%;
+            margin: 1.66%;
+            background-color: #C6FFC2;
+        }
+
+        .box-out {
+            float: left;
+            position: relative;
+            width: 30%;
+            padding-bottom: 20%;
+            margin: 1.66%;
+            background-color: #379969;
+        }
+
+        .details {
+            position: absolute;
+            height: 90%;
+            width: 90%;
+            padding: 5%;
+        }
+
+        .vertical {
+            display: table;
+            width: 100%;
+            height: 100%;
+        }
+
+        .center {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 15%;
+        }
+
+        .pagination > li > a {
+            color: #275420 !important;
+        }
+    </style>
+</head>
+<body ng-app="accInvApp">
+    <form id="form1" runat="server" ng-controller="accInvCtrl">
+        <div id="container" dw-loading="pallets">
+            <div id="header">
+                <img src="../../../images/webpig.jpg" />
+                <div class="text" style="text-align: center">
+                    <h1>Accounting File Request</h1>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="../../../Startup.aspx">Home</a>
+                <a href="../../Programs.aspx">Programs</a>
+                <a href="../../CorpAccProg.aspx">Accounting</a>
+                <a href="InventorySearch.aspx">Inventory Search</a>
+            </div>
+            <div id="main">
+                <div id="nav">
+                    <%If permissionType = "Store" Then%>
+                    <a href="../../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../../Programs(store)" class="button">Programs</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Store Signage</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Corporate" Then%>
+                    <a href="../../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../../Programs.aspx" class="button">Programs</a>
+                    <a href="#" class="button">Meeting Rooms</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Project Info</a>
+                    <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Store Signage</a>
+                    <a href="#" class="button">Help Desk Rpt</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Vendor" Then%>
+                    <a href="../../../Startup.aspx" class="button">Home</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%End If%>
+                </div>
+                <div id="content">
+                    <div class="onerow">
+                        <div class="col2">
+                            <br />
+                        </div>
+                        <div class="col8">
+                            <table class="menu">
+                                <thead>
+                                    <tr>
+                                        <th style="font-size: 1.5em; padding: 10px;"><b><%=recCount%></b> records. Checked out: <b><%=checkedRecs%></b> records.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-size: 1.25em;"><b>SEARCH BY YEAR</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>To search the entire year, select the year from the listbox below, and optionally combining with more options below.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <table style="width: 100%; border-bottom: solid #4e95f4">
+                                                <tr>
+                                                    <td style="text-align: right; width: 50%; padding-right: 5px;">Year and Items:
+                                                    </td>
+                                                    <td style="width: 50%;">
+                                                        <select id="yearSelect" class="form-control" style="width: initial;" ng-model="selection.year" ng-change="selectYear()">
+                                                            <option value="">---Choose Year---</option>
+                                                            <option ng-repeat="year in yearList" value="{{year.dateYear}}">{{year.dateYear}} - {{year.items}}</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <br />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 1.25em;"><b>DEFINE YOUR SEARCH</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Type in the date range you wish to search
+                                            <br />
+                                            You can type in the new dates and then click on the Submit Search button
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <table style="width: 100%; border-bottom: solid #4e95f4">
+                                                <tr>
+                                                    <td style="text-align: center;">From Date:
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="startDate" is-open="popStart.opened" datepicker-options="dateOptions" close-text="Close" placeholder="MM/DD/YYYY" />
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default" ng-click="openStart()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                                            </span>
+                                                        </p>
+                                                    </td>
+                                                    <td style="text-align: center;">To Date:
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="endDate" is-open="popEnd.opened" datepicker-options="dataOptions" close-text="Close" placeholder="MM/DD/YYYY" />
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default" ng-click="openEnd()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                                            </span>
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                                <tr style="height: 40px" ng-show="pageOptions.areBoxes">
+                                                    <td style="text-align: right; width: 50%; padding-right: 5px;">Box Types:
+                                                    </td>
+                                                    <td style="width: 50%;">
+                                                        <select id="boxSelect" class="form-control" style="width: initial;" ng-model="selection.boxType" ng-change="submitType()">
+                                                            <option value="">---Choose Type---</option>
+                                                            <option ng-repeat="type in boxTypes" value="{{type.id}}">{{type.name}}</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr ng-show="pageOptions.areStores">
+                                                    <td style="text-align: right; width: 50%; padding-right: 5px;">Store Number:
+                                                    </td>
+                                                    <td style="width: 50%;">
+                                                        <select id="storeSelect" class="form-control" style="width: initial;" ng-model="selection.storeNo" ng-change="getPalletNo()">
+                                                            <option value="">---Choose Store No---</option>
+                                                            <option ng-repeat="num in storeNums" value="{{num}}">{{num}}</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <br />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <table ng-show="pageOptions.isSelection" style="width: 100%;">
+                                                <tr>
+                                                    <td style="font-size: 1.25em; text-align: center;">
+                                                        <br />
+                                                        {{palletNo}} Pallet(s) Found
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <table style="width: 100%">
+                                                <tr>
+                                                    <td style="text-align: center;">
+                                                        <button type="button" class="btn btn-primary" style="font-size: 1.25em;" ng-click="submitDates()">Submit Search</button>
+                                                        <br />
+                                                        <br />
+                                                    </td>
+                                                    <td style="text-align: center;" ng-show="pageOptions.areBoxes">
+                                                        <button type="button" class="btn btn-success" style="font-size: 1.25em;" ng-click="submitSearch()">View Pallets</button>
+                                                        <br />
+                                                        <br />
+                                                    </td>
+                                                    <td style="text-align: center;" ng-show="pageOptions.areBoxes">
+                                                        <button type="button" class="btn btn-info" style="font-size: 1.25em;" ng-click="resetPage()">New Search</button>
+                                                        <br />
+                                                        <br />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col2 last">
+                            <br />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="footer">
+                <%= DateTime.Now.ToLongDateString()%>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

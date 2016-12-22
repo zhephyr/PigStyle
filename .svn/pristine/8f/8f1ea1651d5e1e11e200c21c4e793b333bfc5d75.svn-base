@@ -1,0 +1,25 @@
+﻿var CSRApp = angular.module('CSReportApp', ['ngAnimate', 'ui.bootstrap']);
+
+CSRApp.controller('CSRCtrl', function ($scope) {
+    $scope.dateOptions = {
+        showWeeks: false,
+    };
+
+    $scope.fromDate = {
+        dt: Date.now(),
+        opened: false,
+    };
+
+    $scope.toDate = {
+        dt: Date.now(),
+        opened: false,
+    };
+
+    $scope.openFrom = function () {
+        $scope.fromDate.opened = true;
+    };
+
+    $scope.openTo = function () {
+        $scope.toDate.opened = true;
+    };
+});

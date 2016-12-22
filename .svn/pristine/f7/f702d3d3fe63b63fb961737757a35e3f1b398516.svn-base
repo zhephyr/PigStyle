@@ -1,0 +1,489 @@
+﻿Imports System.Windows.Forms
+Imports System.DirectoryServices
+Imports System.Data.SqlClient
+Imports System.Web.Script.Serialization
+
+Public Class CustomerServReport
+    Inherits System.Web.UI.Page
+
+    Protected dirGroups As List(Of String)
+    Protected permissionType As String
+    Protected options As New StoreAreaOptions()
+
+    Shared connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+    Shared connection As SqlConnection = New SqlConnection(connectionStr)
+
+    Structure StoreAreaOptions
+        Public storeList As List(Of String)
+        Public areaList As List(Of String)
+    End Structure
+
+    Structure StoreInfo
+        Dim storeNo As String
+        Dim city As String
+        Dim manager As String
+        Dim transmissions As List(Of Transmission)
+        Dim deliveries As List(Of Delivery)
+        Dim custAddOns As List(Of AddOn)
+    End Structure
+
+    Structure Transmission
+        Dim deptNo As String
+        Dim dept As String
+        Dim numTrans As Integer
+        Dim numLate As Integer
+        Dim perOnTime As Double
+    End Structure
+
+    Structure Delivery
+        Dim desc As String
+        Dim numDeliveries As Integer
+        Dim ttlCases As Integer
+        Dim avgCases As Integer
+    End Structure
+
+    Structure AddOn
+        Dim deptNo As String
+        Dim dept As String
+        Dim numCalls As Integer
+        Dim ttlCases As Integer
+    End Structure
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        'Dim username As String = "pfox"
+        Dim username As String = Split(HttpContext.Current.User.Identity.Name, "\")(1)
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso,DC=fb,DC=com", username)
+
+        If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+            Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+        End If
+
+        If dirGroups.Contains("Corporate Users") Then
+            permissionType = "Corporate"
+        ElseIf dirGroups.Contains("Store Users") Then
+            permissionType = "Store"
+        ElseIf dirGroups.Contains("Domain Users") Then
+            permissionType = "Vendor"
+        End If
+
+        Dim cs As ClientScriptManager = Page.ClientScript
+        Dim csName As String = "showNoPermissionMsg"
+        Dim csScript As New StringBuilder()
+        csScript.Append("<script type=""text/javascript"">")
+        csScript.Append("alert('Invalid Group for " & Split(HttpContext.Current.User.Identity.Name, "\")(1) & ".  For access, please contact the Help Desk at Ext. 4357.');")
+        csScript.Append("window.location = '/Programs/Programs.aspx';")
+        csScript.Append("</script>")
+
+        If Not dirGroups.Contains("Corporate Users") And Not dirGroups.Contains("Store Users") Then
+            If Not cs.IsClientScriptBlockRegistered(Me.[GetType](), "showNoPermissionMsg") Then
+                cs.RegisterClientScriptBlock(Me.[GetType](), csName, csScript.ToString())
+            End If
+        End If
+
+        GetOptions()
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                MessageBox.Show("Selected user isn't a member of any groups at this time.", "No groups listed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Else
+                MessageBox.Show(ex.Message.ToString, "Search Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Public Sub GetOptions()
+
+        options.storeList = GetStoreList(permissionType, dirGroups)
+        options.areaList = GetAreaList(permissionType)
+
+    End Sub
+
+    Protected Shared Function GetStoreList(ByVal permissionType As String, ByRef groups As List(Of String)) As List(Of String)
+        connection.Open()
+
+        Dim storeNo As New List(Of String)
+
+        If permissionType = "Store" Then
+            For Each group In groups
+                If group.StartsWith("store ") Then
+                    storeNo.Add(group.Substring(6, 3))
+                End If
+            Next
+            storeNo.Sort()
+
+        ElseIf permissionType = "Corporate" Then
+
+            Dim sqlStr As String = "SELECT storenum FROM csrstrlst WHERE activestore = 'Y' ORDER BY storenum;"
+            Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+            Dim reader As SqlDataReader = cmd.ExecuteReader()
+            Dim storeNum As Integer
+
+            While reader.Read()
+                storeNum = reader("storenum")
+                storeNo.Add(storeNum.ToString("D3"))
+            End While
+            reader.Close()
+
+        End If
+
+        connection.Close()
+        Return storeNo
+    End Function
+
+    Protected Shared Function GetAreaList(ByVal permissionType As String) As List(Of String)
+        If permissionType = "Corporate" Then
+            connection.Open()
+
+            Dim areas As New List(Of String)
+
+            Dim sqlStr As String = "SELECT mgrname FROM csrdmgr ORDER BY mgrname"
+            Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+            Dim reader As SqlDataReader = cmd.ExecuteReader()
+
+            While reader.Read()
+                areas.Add(reader("mgrname"))
+            End While
+            reader.Close()
+
+            connection.Close()
+            Return areas
+        End If
+
+        Return Nothing
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetPeriodData(ByVal permissionType As String, ByVal fromDate As Date, ByVal toDate As Date, ByVal selectedOption As String) As String
+        connection.Open()
+
+        Dim sqlStr As String
+        Dim cmd As New SqlCommand("", connection)
+        Dim reader As SqlDataReader
+
+        Dim storeInfos As New List(Of StoreInfo)
+
+        If selectedOption = "all" Then
+            sqlStr = "SELECT storenum, city, mgrname FROM csrstrlst INNER JOIN csrdmgr ON dmanager = mgrnum WHERE activestore = 'Y' ORDER BY storenum;"
+            cmd.CommandText = sqlStr
+            reader = cmd.ExecuteReader()
+
+            While reader.Read()
+                Dim storeInfo As New StoreInfo
+                storeInfo.storeNo = reader("storenum")
+                storeInfo.city = reader("city")
+                storeInfo.manager = reader("mgrname")
+
+                Dim tempTrans = GetTransmissions(fromDate, toDate, storeInfo.storeNo)
+                If Not tempTrans Is Nothing Then
+                    storeInfo.transmissions = tempTrans
+                End If
+
+                Dim tempDelv = GetDeliveries(fromDate, toDate, storeInfo.storeNo)
+                If Not tempDelv Is Nothing Then
+                    storeInfo.deliveries = tempDelv
+                End If
+
+                Dim tempAddOns = GetAddOns(fromDate, toDate, storeInfo.storeNo)
+                If Not tempAddOns Is Nothing Then
+                    storeInfo.custAddOns = tempAddOns
+                End If
+
+                If storeInfo.transmissions Is Nothing And storeInfo.deliveries Is Nothing And storeInfo.custAddOns Is Nothing Then
+                    Continue While
+                End If
+                storeInfos.Add(storeInfo)
+            End While
+            reader.Close()
+        Else
+            sqlStr = "SELECT mgrnum FROM csrdmgr WHERE mgrname = '" & selectedOption & "';"
+            cmd.CommandText = sqlStr
+            Dim mgrNum As String = cmd.ExecuteScalar()
+
+            If mgrNum IsNot Nothing Then
+                sqlStr = "SELECT storenum, city FROM csrstrlst WHERE dmanager = " & mgrNum & " ORDER BY storenum;"
+                cmd.CommandText = sqlStr
+                reader = cmd.ExecuteReader()
+
+                While reader.Read()
+                    Dim storeInfo As New StoreInfo
+                    storeInfo.storeNo = reader("storenum")
+                    storeInfo.city = reader("city")
+                    storeInfo.manager = selectedOption
+
+                    Dim tempTrans = GetTransmissions(fromDate, toDate, storeInfo.storeNo)
+                    If Not tempTrans Is Nothing Then
+                        storeInfo.transmissions = tempTrans
+                    End If
+
+                    Dim tempDelv = GetDeliveries(fromDate, toDate, storeInfo.storeNo)
+                    If Not tempDelv Is Nothing Then
+                        storeInfo.deliveries = tempDelv
+                    End If
+
+                    Dim tempAddOns = GetAddOns(fromDate, toDate, storeInfo.storeNo)
+                    If Not tempAddOns Is Nothing Then
+                        storeInfo.custAddOns = tempAddOns
+                    End If
+
+                    If storeInfo.transmissions Is Nothing And storeInfo.deliveries Is Nothing And storeInfo.custAddOns Is Nothing Then
+                        Continue While
+                    End If
+                    storeInfos.Add(storeInfo)
+                End While
+                reader.Close()
+
+            Else
+                Dim storenum As Integer
+                If Integer.TryParse(selectedOption, storenum) Then
+                    Dim storeInfo As New StoreInfo
+                    sqlStr = "SELECT city, mgrname FROM csrstrlst INNER JOIN csrdmgr ON dmanager = mgrnum WHERE storenum = " & storenum & ";"
+                    cmd.CommandText = sqlStr
+                    reader = cmd.ExecuteReader()
+
+                    storeInfo.storeNo = storenum
+                    While reader.Read()
+                        storeInfo.city = reader("city")
+                        storeInfo.manager = reader("mgrname")
+                    End While
+
+                    Dim tempTrans = GetTransmissions(fromDate, toDate, storeInfo.storeNo)
+                    If Not tempTrans Is Nothing Then
+                        storeInfo.transmissions = tempTrans
+                    End If
+
+                    Dim tempDelv = GetDeliveries(fromDate, toDate, storeInfo.storeNo)
+                    If Not tempDelv Is Nothing Then
+                        storeInfo.deliveries = tempDelv
+                    End If
+
+                    Dim tempAddOns = GetAddOns(fromDate, toDate, storeInfo.storeNo)
+                    If Not tempAddOns Is Nothing Then
+                        storeInfo.custAddOns = tempAddOns
+                    End If
+
+                    If storeInfo.transmissions Is Nothing And storeInfo.deliveries Is Nothing And storeInfo.custAddOns Is Nothing Then
+                        connection.Close()
+                        Return Nothing
+                    End If
+                    storeInfos.Add(storeInfo)
+                End If
+            End If
+        End If
+        connection.Close()
+
+        Dim serializer As New JavaScriptSerializer(New SimpleTypeResolver())
+        Return serializer.Serialize(storeInfos)
+    End Function
+
+    Protected Shared Function GetTransmissions(ByVal fromDate As Date, ByVal toDate As Date, ByVal storenum As String) As List(Of Transmission)
+        Dim sqlStr As String = "SELECT s.*, d.deptname FROM schedule AS s "
+        sqlStr = sqlStr & "JOIN osdepartments AS d "
+        sqlStr = sqlStr & "ON d.deptnum = s.dept "
+        sqlStr = sqlStr & "WHERE boardtime IS NOT NULL "
+        sqlStr = sqlStr & "AND rpttime IS NOT NULL "
+        sqlStr = sqlStr & "AND transtime >= '" & fromDate.ToString("d") & " 00:00:00' "
+        sqlStr = sqlStr & "AND transtime < '" & toDate.AddDays(1).ToString("d") & " 23:59:59' "
+        sqlStr = sqlStr & "AND storenum = " & storenum & " "
+        sqlStr = sqlStr & "AND recd= 'Y' AND uptype <> 'B' "
+        sqlStr = sqlStr & "AND dept IN (100,110,120,140,200,300) ORDER BY dept;"
+
+        Dim innerConnection As SqlConnection = New SqlConnection(connectionStr)
+        innerConnection.Open()
+        Dim innerCmd As SqlCommand = New SqlCommand(sqlStr, innerConnection)
+        Dim innerReader As SqlDataReader = innerCmd.ExecuteReader()
+        Dim transmissions As New List(Of Transmission)
+        Dim trans As New Transmission
+        Dim currDept As String = Nothing
+        Dim prevDept As String = Nothing
+
+        If Not innerReader.HasRows() Then
+            innerReader.Close()
+            innerConnection.Close()
+            Return Nothing
+        End If
+
+        While innerReader.Read()
+            currDept = innerReader("dept")
+
+            If prevDept Is Nothing Then
+                prevDept = currDept
+                trans.deptNo = currDept
+                trans.dept = innerReader("deptname")
+                trans.numTrans = 0
+                trans.numLate = 0
+            Else
+                If Not prevDept = currDept Then
+                    trans.perOnTime = 1 - trans.numLate / trans.numTrans
+                    transmissions.Add(trans)
+                    prevDept = currDept
+                    trans = New Transmission
+                    trans.deptNo = currDept
+                    trans.dept = innerReader("deptname")
+                    trans.numTrans = 0
+                    trans.numLate = 0
+                End If
+            End If
+
+            trans.numTrans += 1
+
+            Dim transTime As DateTime = DateTime.Parse(innerReader("transtime"))
+            Dim rptTime As DateTime = DateTime.Parse(innerReader("rpttime"))
+            If DateDiff(DateInterval.Minute, transTime, rptTime) >= 30 Then
+                trans.numLate += 1
+            End If
+        End While
+        trans.perOnTime = 1 - trans.numLate / trans.numTrans
+        transmissions.Add(trans)
+
+        innerReader.Close()
+        innerConnection.Close()
+
+        Return transmissions
+    End Function
+
+    Protected Shared Function GetDeliveries(ByVal fromDate As Date, ByVal toDate As Date, ByVal storenum As String) As List(Of Delivery)
+        Dim sqlStr As String = "SELECT d.storenum, d.commodity, d.cases, d.facility, c.description "
+        sqlStr = sqlStr & "FROM csrdeliv as d, csrcommodity as c "
+        sqlStr = sqlStr & "WHERE d.commodity = c.commodity "
+        sqlStr = sqlStr & "AND d.facility = c.facility "
+        sqlStr = sqlStr & "AND schdtime >= '" & fromDate.ToString("d") & " 00:00:00' "
+        sqlStr = sqlStr & "AND schdtime < '" & toDate.ToString("d") & " 23:59:59' "
+        sqlStr = sqlStr & "AND storenum = " & storenum & " "
+        sqlStr = sqlStr & "ORDER BY commodity;"
+
+        Dim innerConnection As SqlConnection = New SqlConnection(connectionStr)
+        innerConnection.Open()
+        Dim innerCmd As SqlCommand = New SqlCommand(sqlStr, innerConnection)
+        Dim innerReader As SqlDataReader = innerCmd.ExecuteReader()
+        Dim deliveries As New List(Of Delivery)
+        Dim delivery As New Delivery
+        Dim currDesc As String = Nothing
+        Dim prevDesc As String = Nothing
+
+        If Not innerReader.HasRows() Then
+            innerReader.Close()
+            innerConnection.Close()
+            Return Nothing
+        End If
+
+        While innerReader.Read()
+            currDesc = innerReader("description")
+
+            If prevDesc Is Nothing Then
+                prevDesc = currDesc
+                delivery.desc = currDesc
+                delivery.numDeliveries = 0
+                delivery.ttlCases = 0
+            Else
+                If Not prevDesc = currDesc Then
+                    delivery.avgCases = delivery.ttlCases / delivery.numDeliveries
+                    deliveries.Add(delivery)
+                    prevDesc = currDesc
+                    delivery = New Delivery
+                    delivery.desc = currDesc
+                    delivery.numDeliveries = 0
+                    delivery.ttlCases = 0
+                End If
+            End If
+
+            delivery.numDeliveries += 1
+            delivery.ttlCases += innerReader("cases")
+        End While
+        delivery.avgCases = delivery.ttlCases / delivery.numDeliveries
+        deliveries.Add(delivery)
+
+        innerReader.Close()
+        innerConnection.Close()
+
+        Return deliveries
+    End Function
+
+    Protected Shared Function GetAddOns(ByVal fromDate As Date, ByVal toDate As Date, ByVal storenum As String) As List(Of AddOn)
+        Dim sqlStr As String = "SELECT a.storenum, a.department, a.qty, a.facility, deptname "
+        sqlStr = sqlStr & "FROM csraddon AS a "
+        sqlStr = sqlStr & "LEFT JOIN osdepartments AS b "
+        sqlStr = sqlStr & "ON department = deptnum "
+        sqlStr = sqlStr & "WHERE departtime >= '" & fromDate.ToString("d") & " 00:00:00' "
+        sqlStr = sqlStr & "AND departtime < '" & toDate.ToString("d") & " 23:59:59' "
+        sqlStr = sqlStr & "AND storenum = " & storenum & " "
+        sqlStr = sqlStr & "ORDER BY department;"
+
+        Dim innerConnection As SqlConnection = New SqlConnection(connectionStr)
+        innerConnection.Open()
+        Dim innerCmd As SqlCommand = New SqlCommand(sqlStr, innerConnection)
+        Dim innerReader As SqlDataReader = innerCmd.ExecuteReader()
+        Dim custAddOns As New List(Of AddOn)
+        Dim addOn As New AddOn
+        Dim currDept As String
+        Dim prevDept As String
+
+        If Not innerReader.HasRows() Then
+            innerReader.Close()
+            innerConnection.Close()
+            Return Nothing
+        End If
+
+        While innerReader.Read()
+            currDept = innerReader("department")
+
+            If prevDept Is Nothing Then
+                prevDept = currDept
+                addOn.deptNo = currDept
+                If IsDBNull(innerReader("deptname")) Then
+                    addOn.dept = "N/A"
+                Else
+                    addOn.dept = innerReader("deptname")
+                End If
+                addOn.numCalls = 0
+                addOn.ttlCases = 0
+            Else
+                If Not prevDept = currDept Then
+                    custAddOns.Add(addOn)
+                    prevDept = currDept
+                    addOn = New AddOn
+                    addOn.deptNo = currDept
+                    addOn.dept = innerReader("deptname")
+                    addOn.numCalls = 0
+                    addOn.ttlCases = 0
+                End If
+            End If
+
+            addOn.numCalls += 1
+            addOn.ttlCases += innerReader("qty")
+        End While
+        custAddOns.Add(addOn)
+
+        innerReader.Close()
+        innerConnection.Close()
+
+        Return custAddOns
+    End Function
+
+End Class

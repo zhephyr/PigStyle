@@ -1,0 +1,200 @@
+﻿function StoreEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateStore(e);
+    }
+}
+function validateStore(e){
+    var num = parseInt(document.getElementById('<%=txtStoreNum.clientID%>').value,10);
+    var length = parseInt(document.getElementById('<%=txtStoreNum.clientID%>').value.length);
+    if (isNaN(num))
+    {
+        document.getElementById('<%=txtStoreNum.clientID%>').value= "";
+        window.alert('Enter a Store Number!');
+        document.getElementById('<%=txtStoreNum.clientID%>').focus();
+        return false;
+    }
+    else if (length > 3 || length < 3)
+    {
+        document.getElementById('<%=txtStoreNum.clientID%>').value= "";
+        window.alert('Enter a Store Number');
+        document.getElementById('<%=txtStoreNum.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        var btn = document.getElementById('<%=btnHidden2.clientID%>');
+        btn.click();
+        return true;
+    }
+}
+function MoveToNumber(e){
+    document.getElementById('<%=txtNumOfPads.clientID%>').focus();
+    return true;
+}
+function NumOfPadsEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validatePads(e);
+    }
+}
+function validatePads(e){
+    var Pads = parseInt(document.getElementById('<%=txtNumOfPads.clientID%>').value,10);
+    if (isNaN(Pads) || (Pads < 1 || Pads > 999)) 
+    {
+        document.getElementById('<%=txtNumOfPads.clientID%>').value= "";
+        window.alert('Enter an acceptable range (1 - 999) for Pads used');
+        document.getElementById('<%=txtNumOfPads.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        document.getElementById('<%=txtFormNum.clientID%>').focus();
+        return true;
+    }
+}
+function FormNumEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        var btn = document.getElementById('<%=btnHidden2.clientID%>');
+        btn.click();
+    }
+}
+// This function validates all the text boxes and list boxes when the add button is pressed.
+function validateForm(e){
+    var Size = document.getElementById('<%=lstPadSize.clientID%>').value;
+    var Pads = document.getElementById('<%=txtNumOfPads.clientID%>').value;
+    var Form = document.getElementById('<%=txtFormNum.clientID%>').value;
+    if (/$^/.test(Size))
+    {
+        document.getElementById('<%=lstPadSize.clientID%>').value= "";
+        window.alert('Please Choose A Pad Size');
+        document.getElementById('<%=lstPadSize.clientID%>').focus();
+        return false;
+    }
+    else if (isNaN(Pads) || (Pads < 1 || Pads > 999)) 
+    {
+        document.getElementById('<%=txtNumOfPads.clientID%>').value= "";
+        window.alert('Please Enter A Pad Amount');
+        document.getElementById('<%=txtNumOfPads.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(Form))
+    {
+        document.getElementById('<%=txtFormNum.clientID%>').value= "";
+        window.alert('Please Select A Simplex/Duplex');
+        document.getElementById('<%=txtFormNum.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        var btn = document.getElementById('<%=btnLoadGrid.clientID%>');
+        btn.click();
+    }
+}
+function RequestorEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateRequestor(e);
+    }
+}
+function validateRequestor(e){
+    var requestor = document.getElementById('<%=txtRequestor.clientID%>').value;
+    if (/[^a-zA-Z\s]/.test(requestor))
+    {
+        document.getElementById('<%=txtRequestor.clientID%>').value= "";
+        window.alert('Please Enter A Requestor');
+        document.getElementById('<%=txtRequestor.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(requestor))
+    {
+        document.getElementById('<%=txtRequestor.clientID%>').value= "";
+        window.alert('Please Enter A Requestor');
+        document.getElementById('<%=txtRequestor.clientID%>').focus();
+        return false;
+    }
+    else 
+    {
+        document.getElementById('<%=lstDepartment.clientID%>').focus();
+        return true;
+    }  
+}
+function MoveToPad(e){
+    document.getElementById('<%=lstPadSize.clientID%>').focus();
+    return true;
+}
+function MoveToNum(e){
+    document.getElementById('<%=txtNumOfPads.clientID%>').focus();
+    return true;
+}
+function PadsEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validatePads(e);
+    }
+}
+function FormEnter2(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateForm2(e)
+    }
+}
+// This function validates all the text boxes and list boxes when the add button is pressed.
+function validateForm2(e){
+    var requestor = document.getElementById('<%=txtRequestor.clientID%>').value;
+    var Department = document.getElementById('<%=lstDepartment.clientID%>').value;
+    var SubDepartment = document.getElementById('<%=lstSubDepartment.clientID%>').value;
+    var Size = document.getElementById('<%=lstPadSize.clientID%>').value;
+    var Pads = document.getElementById('<%=txtNumOfPads.clientID%>').value;
+    var Form = document.getElementById('<%=txtFormNumber.clientID%>').value;
+
+    if (/$^/.test(requestor))
+    {
+        document.getElementById('<%=txtRequestor.clientID%>').value= "";
+        window.alert('Please Enter A Requestor');
+        document.getElementById('<%=txtRequestor.clientID%>').focus();
+        return false;
+    }
+    else if (/[^a-zA-Z\s]/.test(requestor))
+    {
+        document.getElementById('<%=txtRequestor.clientID%>').value= "";
+        window.alert('Please Enter A Requestor');
+        document.getElementById('<%=txtRequestor.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(Department))
+    {
+        document.getElementById('<%=lstDepartment.clientID%>').value= "";
+        window.alert('Please Choose A Department');
+        document.getElementById('<%=lstDepartment.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(SubDepartment))
+    {
+        document.getElementById('<%=lstSubDepartment.clientID%>').value= "";
+        window.alert('Please Choose A Sub Deparment');
+        document.getElementById('<%=lstSubDepartment.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(Size))
+    {
+        document.getElementById('<%=lstPadSize.clientID%>').value= "";
+        window.alert('Please Choose A Pad Size');
+        document.getElementById('<%=lstPadSize.clientID%>').focus();
+        return false;
+    }
+    else if (isNaN(Pads) || (Pads < 1 || Pads > 999)) 
+    {
+        document.getElementById('<%=txtNumOfPads.clientID%>').value= "";
+        window.alert('Please Enter A Pad Amount');
+        document.getElementById('<%=txtNumOfPads.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(Form))
+    {
+        document.getElementById('<%=txtFormNumber.clientID%>').value= "";
+        window.alert('Please Select A Simplex/Duplex');
+        document.getElementById('<%=txtFormNumber.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        var btn = document.getElementById('<%=btnLoadGrid.clientID%>');
+        btn.click();
+    }
+}

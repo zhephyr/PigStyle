@@ -1,0 +1,421 @@
+﻿<div class="modal-body">
+    <div style="text-align: right;">
+        <button type="button" class="btn btn-link" ng-click="cancel()"><i class="glyphicon glyphicon-remove"></i></button>
+    </div>
+    <table class="inventory">
+        <thead>
+            <tr>
+                <th style="font-size: 24px">Slot {{modalInfo[currentPage - 1].palletLoc}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <div class="text-center" style="background-color: #DFFFDE; padding-bottom: 5px;">
+                        <uib-pagination total-items="totalPages" items-per-page="1" ng-model="currentPage" max-size="5" class="pagination" boundary-link-numbers="true" rotate="true" force-ellipses="true"></uib-pagination>
+                        <br />
+                        <input type="number" class="form-control input-sm" ng-model="currentPage" min="1" max="{{totalPages}}" style="width: 6%; text-align: center; display: inline;" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; font-size: 15px; text-align: center;"><b>Front</b></td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="width: 100%">
+                        <tr>
+                            <td style="width: 50%">
+                                <div id="F10" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF10.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF10)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF10.type}} - {{modalInfo[currentPage - 1].boxF10.store}}
+                                                </button>
+                                                <br />
+                                                Box 10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F11" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF11.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF11)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF11.type}} - {{modalInfo[currentPage - 1].boxF11.store}}
+                                                </button>
+                                                <br />
+                                                Box 11
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F12" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF12.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF12)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF12.type}} - {{modalInfo[currentPage - 1].boxF12.store}}
+                                                </button>
+                                                <br />
+                                                Box 12
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F07" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF07.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF07)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF07.type}} - {{modalInfo[currentPage - 1].boxF07.store}}
+                                                </button>
+                                                <br />
+                                                Box 07
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F08" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF08.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF08)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF08.type}} - {{modalInfo[currentPage - 1].boxF08.store}}
+                                                </button>
+                                                <br />
+                                                Box 08
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F09" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF09.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF09)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF09.type}} - {{modalInfo[currentPage - 1].boxF09.store}}
+                                                </button>
+                                                <br />
+                                                Box 09
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F04" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF04.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF04)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF04.type}} - {{modalInfo[currentPage - 1].boxF04.store}}
+                                                </button>
+                                                <br />
+                                                Box 04
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F05" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF05.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF05)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF05.type}} - {{modalInfo[currentPage - 1].boxF05.store}}
+                                                </button>
+                                                <br />
+                                                Box 05
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F06" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF06.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF06)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF06.type}} - {{modalInfo[currentPage - 1].boxF06.store}}
+                                                </button>
+                                                <br />
+                                                Box 06
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F01" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF01.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF01)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF01.type}} - {{modalInfo[currentPage - 1].boxF01.store}}
+                                                </button>
+                                                <br />
+                                                Box 01
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F02" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF02.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF02)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF02.type}} - {{modalInfo[currentPage - 1].boxF02.store}}
+                                                </button>
+                                                <br />
+                                                Box 02
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="F03" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxF03.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxF03)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxF03.type}} - {{modalInfo[currentPage - 1].boxF03.store}}
+                                                </button>
+                                                <br />
+                                                Box 03
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <td style="vertical-align: middle;">
+                                    <img id="frontImg" ng-src="http://freshnet/production/Reclaim/Images/{{modalInfo[currentPage - 1].frontPic}}" style="max-width: 100%; height: auto;" />
+                                </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; font-size: 15px; text-align: center;"><b>Back</b></td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="width: 100%">
+                        <tr>
+                            <td style="width: 50%">
+                                <div id="B10" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB10.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB10)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB10.type}} - {{modalInfo[currentPage - 1].boxB10.store}}
+                                                </button>
+                                                <br />
+                                                Box 10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B11" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB11.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB11)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB11.type}} - {{modalInfo[currentPage - 1].boxB11.store}}
+                                                </button>
+                                                <br />
+                                                Box 11
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B12" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB12.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB12)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB12.type}} - {{modalInfo[currentPage - 1].boxB12.store}}
+                                                </button>
+                                                <br />
+                                                Box 12
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B07" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB07.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB07)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB07.type}} - {{modalInfo[currentPage - 1].boxB07.store}}
+                                                </button>
+                                                <br />
+                                                Box 07
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B08" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB08.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB08)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB08.type}} - {{modalInfo[currentPage - 1].boxB08.store}}
+                                                </button>
+                                                <br />
+                                                Box 08
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B09" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB09.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB09)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB09.type}} - {{modalInfo[currentPage - 1].boxB09.store}}
+                                                </button>
+                                                <br />
+                                                Box 09
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B04" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB04.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB04)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB04.type}} - {{modalInfo[currentPage - 1].boxB04.store}}
+                                                </button>
+                                                <br />
+                                                Box 04
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B05" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB05.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB05)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB05.type}} - {{modalInfo[currentPage - 1].boxB05.store}}
+                                                </button>
+                                                <br />
+                                                Box 05
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B06" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB06.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB06)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB06.type}} - {{modalInfo[currentPage - 1].boxB06.store}}
+                                                </button>
+                                                <br />
+                                                Box 06
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B01" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB01.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB01)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB01.type}} - {{modalInfo[currentPage - 1].boxB01.store}}
+                                                </button>
+                                                <br />
+                                                Box 01
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B02" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB02.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB02)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB02.type}} - {{modalInfo[currentPage - 1].boxB02.store}}
+                                                </button>
+                                                <br />
+                                                Box 02
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="B03" class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{modalInfo[currentPage - 1].boxB03.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(modalInfo[currentPage - 1].palletLoc, modalInfo[currentPage - 1].boxB03)" style="padding: 0;">
+                                                    {{modalInfo[currentPage - 1].boxB03.type}} - {{modalInfo[currentPage - 1].boxB03.store}}
+                                                </button>
+                                                <br />
+                                                Box 03
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="vertical-align: middle; text-align: center;">
+                                <img id="backImg" ng-src="http://freshnet/production/Reclaim/Images/{{modalInfo[currentPage - 1].backPic}}" style="max-width: 100%; height: auto;" />
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    <uib-pagination total-items="totalPages" items-per-page="1" ng-model="currentPage" max-size="5" class="pagination" boundary-link-numbers="true" rotate="true" force-ellipses="true"></uib-pagination>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

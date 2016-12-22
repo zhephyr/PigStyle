@@ -1,0 +1,291 @@
+﻿<div class="modal-header" style="text-align: center;">
+    <h3 class="modal-title">PLU# {{productData.PLU}} -- {{productData.Dept}}</h3>
+</div>
+<div class="modal-body">
+    <div ng-show="!pluValid" style="text-align:center;">
+        PLU {{productData.PLU}} not found in Database
+    </div>
+    <div class="onerow" ng-show="pluValid">
+        <div class="col6">
+            <div style="text-align: center;">{{productData.Desc1}} {{productData.Desc2}}</div>
+            <br />
+            <br />
+            Ingredients:
+            <br />
+            {{productData.Ingredients}}
+            <br />
+            <br />
+            <br />
+            <div style="text-align: center;">
+                <b>UPC NUMBER</b>
+                <br />
+                {{productData.UPC}}
+            </div>
+        </div>
+        <div class="col6" id="nutritionfacts" ng-show="!areFacts">
+            <table style="width:100%;" cellspacing:0; cellpadding:0;">
+                <tbody>
+                    <tr>
+                        <td style="text-align: center;" class="header">Nutrition Facts</td>
+                    </tr>
+                    <tr>
+                        <td>N/A</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col6" id="nutritionfacts" ng-show="areFacts">
+            <table style="width:100%;" cellspacing:0; cellpadding:0;">
+                <tbody>
+                    <tr>
+                        <td style="text-align: center;" class="header">Nutrition Facts</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Serving Size     {{productData.ServSize}}
+                            <br />
+                            Servings Per Container     {{productData.ServPer}}
+                        </td>
+                    </tr>
+                    <tr style="height: 7px">
+                        <td style="background-color: #000000;"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 7pt">
+                            <div class="line">Amount Per Serving</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="label">Calories
+                                    <div class="weight">{{productData.Calories}}</div>
+                                </div>
+                                <div style="padding-top: 1px; float: right;" class="labellight">Calories from Fat
+                                    <div class="weight">{{productData.CaloriesFat}}</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="dvlabel">% Daily Value<sup>*</sup></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="label">Total Fat
+                                    <div class="weight">{{productData.TotalFat}}g</div>
+                                </div>
+                                <div class="dv">{{productData.PerFat}}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="indent">
+                            <div class="line">
+                                <div class="labellight">Saturated Fat
+                                    <div class="weight">{{productData.SatFat}}g</div>
+                                </div>
+                                <div class="dv">{{productData.PerSatFat}}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="indent">
+                            <div class="line">
+                                <div class="labellight"><i>Trans</i> Fat
+                                    <div class="weight">{{productData.TransFat}}g</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="label">Cholesterol
+                                    <div class="weight">{{productData.Cholesterol}}mg</div>
+                                </div>
+                                <div class="dv">{{productData.PerCholesterol}}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="label">Sodium
+                                    <div class="weight">{{productData.Sodium}}mg</div>
+                                </div>
+                                <div class="dv">{{productData.PerSodium}}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="label">Total Carbohydrates
+                                    <div class="weight">{{productData.Carbs}}g</div>
+                                </div>
+                                <div class="dv">{{productData.PerCarbs}}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="indent">
+                            <div class="line">
+                                <div class="labellight">Dietary Fiber
+                                    <div class="weight">{{productData.Fiber}}g</div>
+                                </div>
+                                <div class="dv">{{productData.PerFiber}}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="indent">
+                            <div class="line">
+                                <div class="labellight">Sugars
+                                    <div class="weight">{{productData.Sugars}}g</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="label">
+                                    Protein
+                                    <div class="weight">{{productData.Protein}}g</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 7px">
+                        <td style="background-color: #000000;"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table cellspacing="0" cellpadding="0" border="0" class="vitamins">
+                                <tbody>
+                                    <tr>
+                                        <td>Vitamin A &nbsp;&nbsp; {{productData.VitA}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Vitamin C &nbsp;&nbsp; {{productData.VitC}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Calcium &nbsp;&nbsp; {{productData.Calc}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Iron &nbsp;&nbsp; {{productData.Iron}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Vitamin D &nbsp;&nbsp; {{productData.VitD}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Vitamin E &nbsp;&nbsp; {{productData.VitE}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Thiamine &nbsp;&nbsp; {{productData.Thia}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Riboflavin &nbsp;&nbsp; {{productData.Ribo}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Niacin &nbsp;&nbsp; {{productData.Niac}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Vitamin B6 &nbsp;&nbsp; {{productData.VitB6}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Folate &nbsp;&nbsp; {{productData.Folate}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Vitamin B12 &nbsp;&nbsp; {{productData.VitB12}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Biotin &nbsp;&nbsp; {{productData.Biotin}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Phosphorus &nbsp;&nbsp; {{productData.Phos}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Zinc &nbsp;&nbsp; {{productData.Zinc}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Magnesium &nbsp;&nbsp; {{productData.Mag}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Iodine &nbsp;&nbsp; {{productData.Iodine}}%</td>
+                                        <td style="text-align: center;">•</td>
+                                        <td style="text-align: right;">Copper &nbsp;&nbsp; {{productData.Copper}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pantothenic Acid &nbsp;&nbsp; {{productData.Acid}}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="line">
+                                <div class="labellight">
+                                    *Percent Daily Values are based on a 2000 calories diet. Your daily values may be higher or lower depending on your calories needs.
+                                    <table border=0 width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td width="30%">&nbsp</td>
+                                            <td width="30%">Calories:</td>
+                                            <td width="20%" style="text-align:left">2000</td>
+                                            <td width="20%" style="text-align:left">2000</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="line">
+                                <table border=0 width="100%" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <td width="30%">Total Fat</td>
+                                        <td width="30%">Less Than</td>
+                                        <td width="20%" style="text-align:left">65<i>g</i></td>
+                                        <td width="20%" style="text-align:left">80<i>g</i></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="30%">Sat Fat</td>
+                                        <td width="30%">Less Than</td>
+                                        <td width="20%" style="text-align:left">20<i>g</i></td>
+                                        <td width="20%" style="text-align:left">25<i>g</i></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="30%">Cholesterol</td>
+                                        <td width="30%">Less Than</td>
+                                        <td width="20%" style="text-align:left">300<i>mg</i></td>
+                                        <td width="20%" style="text-align:left">300<i>mg</i></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sodium</td>
+                                        <td>Less Than</td>
+                                        <td style="text-align:left">2400<i>mg</i></td>
+                                        <td style="text-align:left">2400<i>mg</i></td>
+                                    </tr>
+                                    <tr>
+                                    <td>&nbsp</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">Total Carbohydrates</td>
+                                        <td style="text-align:left">300<i>g</i></td>
+                                        <td style="text-align:left">375<i>g</i></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">&nbsp&nbsp&nbsp Dietary Fiber</td>
+                                        <td style="text-align:left">25<i>g</i></td>
+                                        <td style="text-align:left">30<i>g</i></td>
+                                    </tr>      
+                                </table>
+                            </div>
+                            <div class="line">
+                                Calories per gram:
+                                <br />
+                                Fat 9 - Carbohydrate 4 - Percent 4 
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

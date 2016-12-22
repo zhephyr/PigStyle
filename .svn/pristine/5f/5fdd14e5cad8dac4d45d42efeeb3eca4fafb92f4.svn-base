@@ -1,0 +1,179 @@
+﻿Imports System.DirectoryServices
+Imports System.Windows.Forms
+Imports System.Data.SqlClient
+Imports System.Web.Script.Serialization
+
+Public Class InventorySearch
+    Inherits System.Web.UI.Page
+
+    Structure YearItems
+        Dim dateYear As Integer
+        Dim items As Integer
+    End Structure
+
+    Structure BoxType
+        Dim id As String
+        Dim name As String
+    End Structure
+
+    Public dirGroups As List(Of String)
+    Public permissionType As String
+
+    Public recCount As Integer
+    Public checkedRecs As Integer
+
+    Shared connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+    Shared connection As SqlConnection = New SqlConnection(connectionStr)
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso,DC=fb,DC=com", System.Environment.UserName)
+
+        GetRecCount()
+        PopulateYearList()
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                Dim msg As String
+                msg = "<script language='javascript'>"
+                msg += "alert('Selected user is not a member of any groups at this time." & username & "');"
+                msg += "<" & "/script>"
+                Response.Write(msg)
+            Else
+                Dim msg As String
+                msg = "<script language='javascript'>"
+                msg += "alert('" & ex.Message.ToString & "');"
+                msg += "<" & "/script>"
+                Response.Write(msg)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Private Sub GetRecCount()
+        Dim connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+        Dim connection As SqlConnection = New SqlConnection(connectionStr)
+        connection.Open()
+
+        Dim sqlStr As String = "SELECT COUNT(*) AS total FROM rcdetail"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        recCount = cmd.ExecuteScalar()
+
+        sqlStr = "SELECT COUNT(*) AS total FROM rcdetail WHERE uname IS NOT null"
+        cmd.CommandText = sqlStr
+        checkedRecs = cmd.ExecuteScalar()
+        connection.Close()
+    End Sub
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function PopulateYearList() As String
+        connection.Open()
+        Dim sqlStr As String = "SELECT YEAR(cdte) AS myyear, COUNT(*) AS total FROM rcdetail GROUP BY YEAR(cdte) ORDER BY 1"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+        Dim yearList As List(Of YearItems) = New List(Of YearItems)
+        While reader.Read()
+            Dim yearData As YearItems = New YearItems()
+            yearData.dateYear = reader("myyear")
+            yearData.items = reader("total")
+            yearList.Add(yearData)
+        End While
+        connection.Close()
+
+        Dim serializer As New JavaScriptSerializer(New SimpleTypeResolver())
+        Return serializer.Serialize(yearList)
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetBoxTypes(ByVal startDate As String, ByVal endDate As String) As String
+        connection.Open()
+        Dim sqlStr As String = "SELECT typename, type FROM rctype WHERE type in (SELECT distinct(type) FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "') ORDER BY typename"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+        Dim boxTypes As List(Of BoxType) = New List(Of BoxType)
+        While reader.Read()
+            Dim type As BoxType = New BoxType()
+            type.id = reader("type")
+            type.name = reader("typename")
+            boxTypes.Add(type)
+        End While
+        connection.Close()
+
+        Dim serializer As New JavaScriptSerializer(New SimpleTypeResolver())
+        Return serializer.Serialize(boxTypes)
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetStoreNo(ByVal boxType As String, ByVal startDate As String, ByVal endDate As String) As String
+        connection.Open()
+        Dim sqlStr As String = "SELECT distinct(store) FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "' AND type = '" & boxType & "' ORDER BY store"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+        Dim storeNums As List(Of String) = New List(Of String)
+        While reader.Read()
+            storeNums.Add(reader("store"))
+        End While
+        connection.Close()
+
+        Dim serializer As New JavaScriptSerializer(New SimpleTypeResolver())
+        Return serializer.Serialize(storeNums)
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetPalletNo(ByVal storeNo As String, ByVal boxType As String, ByVal startDate As String, ByVal endDate As String) As String
+        connection.Open()
+        Dim sqlStr As String
+        If IsNothing(boxType) Or boxType = "" Then
+            sqlStr = "SELECT count(*) as RecCount FROM rcinv WHERE pallid in (SELECT mlink FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "')"
+        ElseIf IsNothing(storeNo) Or storeNo = "" Then
+            sqlStr = "SELECT count(*) as RecCount FROM rcinv WHERE pallid in (SELECT mlink FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "' AND type = '" & boxType & "')"
+        Else
+            sqlStr = "SELECT count(*) as RecCount FROM rcinv WHERE pallid in (SELECT mlink FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "' AND type = '" & boxType & "' AND store = '" & storeNo & "')"
+        End If
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        Dim palletNo As Integer = cmd.ExecuteScalar
+        connection.Close()
+        Return palletNo
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetPalletData(ByVal storeNo As String, ByVal boxType As String, ByVal startDate As String, ByVal endDate As String) As String
+        connection.Open()
+        Dim sqlStr As String
+        If IsNothing(boxType) Or boxType = "" Then
+            sqlStr = "SELECT count(*) as RecCount FROM rcinv WHERE pallid in (SELECT mlink FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "')"
+        ElseIf IsNothing(storeNo) Or storeNo = "" Then
+            sqlStr = "SELECT count(*) as RecCount FROM rcinv WHERE pallid in (SELECT mlink FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "' AND type = '" & boxType & "')"
+        Else
+            sqlStr = "SELECT count(*) as RecCount FROM rcinv WHERE pallid in (SELECT mlink FROM rcdetail WHERE cdte >= '" & startDate & "' AND cdte <= '" & endDate & "' AND type = '" & boxType & "' AND store = '" & storeNo & "')"
+        End If
+        connection.Close()
+        Return
+    End Function
+
+End Class

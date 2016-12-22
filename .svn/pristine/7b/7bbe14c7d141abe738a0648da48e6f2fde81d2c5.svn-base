@@ -1,0 +1,89 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="plu.aspx.vb" Inherits="PigStyle.plu" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>PLU Search</title>
+    <link href="../../CSS/base.css" rel="stylesheet" />
+    <script src="../../Scripts/copier-standard.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="container">
+            <div id="header">
+                <img src="../../images/webpig.jpg" />
+                <div class="text" style="text-align: center">
+                    <h1>PLU Ingredients & Nutrition</h1>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="../../Startup.aspx">Home</a>
+                <a href="../Programs.aspx">Programs</a>
+                <a href="plu.aspx">PLU Search</a>
+            </div>
+            <div id="main">
+                <div id="nav">
+                    <%If permissionType = "Store" Then%>
+                    <a href="../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../Programs(store)" class="button">Programs</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Corporate" Then%>
+                    <a href="../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../Programs.aspx" class="button">Programs</a>
+                    <a href="#" class="button">Meeting Rooms</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Project Info</a>
+                    <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Help Desk Rpt</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Vendor" Then%>
+                    <a href="../../Startup.aspx" class="button">Home</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%End If%>
+                </div>
+                <div id="content">
+                    <div class="onerow">
+                        <div class="col12" style="text-align:center; padding-top: 25px; padding-bottom: 25px;">
+                            There are 4094 PLUs in the database.
+                        </div>
+                    </div>
+                    <div class="onerow">
+                        <div class="col3"><br /></div>
+                        <div class="col6">
+                            PLU to Search: <asp:TextBox ID="PLUtxt" runat="server" Width="70%"></asp:TextBox>
+                            <br />
+                            <br />
+                            PLU Description: <asp:TextBox ID="desctxt" runat="server" Width="65%"></asp:TextBox>
+                        </div>
+                        <div class="col3"><br /></div>
+                    </div>
+                </div>
+            </div>
+            <div id="footer">
+                <%= DateTime.Now.ToLongDateString()%>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

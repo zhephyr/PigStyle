@@ -1,0 +1,30 @@
+﻿<div class="modal-header">
+  <h3>Case Checkout Info</h3>
+</div>
+<div class="modal-body">
+  <table class="menu">
+    <thead>
+      <tr>
+        <th>Slot</th>
+        <th>Case End Date</th>
+        <th>Case Type</th>
+        <th>Store Number</th>
+        <th>User</th>
+        <th>Date Checked Out</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-size: 14px;">{{selectedBox.location}}</td>
+        <td style="font-size: 14px;">{{selectedBox.boxInfo.storageDate}}</td>
+        <td style="font-size: 14px;">{{selectedBox.boxInfo.type}}</td>
+        <td style="font-size: 14px;">{{selectedBox.boxInfo.store}}</td>
+        <td style="font-size: 14px;">{{selectedBox.name}}</td>
+        <td style="font-size: 14px;">{{selectedBox.checkedDate}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-success" style="width: 20%;" ng-click="close()">OK</button>
+</div>

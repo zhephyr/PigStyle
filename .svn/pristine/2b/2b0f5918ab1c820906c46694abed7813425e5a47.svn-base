@@ -1,0 +1,199 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="plu.aspx.vb" Inherits="PigStyle.plu" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>PLU Search</title>
+    <script src="../../Scripts/angular.js"></script>
+    <script src="../../Scripts/angular-animate.js"></script>
+    <script src="../../Scripts/angular-ui/ui-bootstrap-tpls.js"></script>
+    <script src="../../Scripts/plum.js"></script>
+    <link href="../../CSS/bootstrap.css" rel="stylesheet" />
+    <link href="../../CSS/base.css" rel="stylesheet" />
+    <style type="text/css">
+        table {
+            border-spacing: 20px;
+        }
+
+            table tr td:first-child {
+                text-align: right;
+            }
+    </style>
+    <style type="text/css">
+        #nutritionfacts {
+            border: 1px solid black;
+            padding: 3px;
+            width: 244px;
+            font-family: 'Arial Black','Helvetica Bold',sans-serif
+        }
+
+            #nutritionfacts td {
+                color: black;
+                font-family: 'Arial Black','Helvetica Bold',sans-serif;
+                font-size: 12pt;
+                padding: 0;
+            }
+
+                #nutritionfacts td.header {
+                    font-family: 'Arial Black','Helvetica Bold',sans-serif;
+                    font-size: 36px;
+                    white-space: nowrap;
+                }
+
+            #nutritionfacts div.label {
+                float: left;
+                font-family: 'Arial Black','Helvetica Bold',sans-serif;
+            }
+
+            #nutritionfacts div.weight {
+                display: inline;
+                font-family: Arial,Helvetica,sans-serif;
+                padding-left: 1px;
+            }
+
+            #nutritionfacts div.dv {
+                display: inline;
+                float: right;
+                font-family: 'Arial Black','Helvetica Bold',sans-serif;
+            }
+
+            #nutritionfacts table.vitamins td {
+                font-family: Arial,Helvetica,sans-serif;
+                white-space: nowrap;
+                width: 33%;
+            }
+
+            #nutritionfacts div.line {
+                border-top: 1px solid black;
+            }
+
+            #nutritionfacts div.labellight {
+                float: left;
+                font-family: Arial,Helvetica,sans-serif;
+            }
+
+            #nutritionfacts .highlighted {
+                border: 1px dotted grey;
+                padding: 2px;
+            }
+    </style>
+</head>
+<body ng-app="plumApp">
+    <form id="form1" runat="server">
+        <div id="container">
+            <div id="header">
+                <img src="../../images/webpig.jpg" />
+                <div class="text" style="text-align: center">
+                    <h1>PLU Ingredients & Nutrition</h1>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="../../Startup.aspx">Home</a>
+                <a href="../Programs.aspx">Programs</a>
+                <a href="plu.aspx">PLU Search</a>
+            </div>
+            <div id="main">
+                <div id="nav">
+                    <%If permissionType = "Store" Then%>
+                    <a href="../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../Programs(store)" class="button">Programs</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Corporate" Then%>
+                    <a href="../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../Programs.aspx" class="button">Programs</a>
+                    <a href="#" class="button">Meeting Rooms</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Project Info</a>
+                    <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Help Desk Rpt</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Vendor" Then%>
+                    <a href="../../Startup.aspx" class="button">Home</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%End If%>
+                </div>
+                <div id="content">
+                    <div class="onerow">
+                        <div class="col12" style="text-align: center; padding-top: 25px; padding-bottom: 25px;">
+                            There are <%=totalRecs%> PLUs in the database.
+                        </div>
+                    </div>
+                    <div class="onerow" id="pluPicker" ng-controller="pluModalCtrl">
+                        <script type="text/ng-template" ng-include="'PLU-Data.html'"></script>
+                        <div class="col3">
+                            <br />
+                            <asp:HiddenField ClientIDMode="Static" ID="nutritionData" runat="server" />
+                        </div>
+                        <div class="col6">
+                            <asp:Table ID="PLUtable" runat="server" CellPadding="10" CellSpacing="5">
+                                <asp:TableRow>
+                                    <asp:TableCell>
+                                        PLU to Search: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:TextBox ID="PLUtxt" runat="server"></asp:TextBox>
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                                <asp:TableRow>
+                                    <asp:TableCell>
+                                        PLU Description: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:TextBox ID="desctxt" runat="server"></asp:TextBox>
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                                <asp:TableRow>
+                                    <asp:TableCell>
+                                        Select Department: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:DropDownList ID="deptlist" runat="server" AutoPostBack="true" OnSelectedIndexChanged="LoadPLUs">
+                                        </asp:DropDownList>
+                                        <asp:CheckBox ID="orderPLU" runat="server" Text="Sort by PLU" />
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                                <asp:TableRow ID="PLUrow" runat="server" Visible="false">
+                                    <asp:TableCell>
+                                        PLU - Description: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:DropDownList ID="PLUlist" Width="100%" runat="server" AutoPostBack="true" OnSelectedIndexChanged="LoadData"></asp:DropDownList>
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                            </asp:Table>
+                        </div>
+                        <div class="col3">
+                            <br />
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div id="footer">
+                <%= DateTime.Now.ToLongDateString()%>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

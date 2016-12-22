@@ -1,0 +1,91 @@
+﻿Imports System.DirectoryServices
+Imports System.Windows.Forms
+Imports System.Data.SqlClient
+
+Public Class InventorySearch
+    Inherits System.Web.UI.Page
+
+    Public dirGroups As List(Of String)
+    Public permissionType As String
+
+    Public recCount As Integer
+    Public checkedRecs As Integer
+
+    Dim connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+    Dim connection As SqlConnection = New SqlConnection(connectionStr)
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso,DC=fb,DC=com", System.Environment.UserName)
+
+        GetRecCount()
+        PopulateYearList()
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                Dim msg As String
+                msg = "<script language='javascript'>"
+                msg += "alert('Selected user is not a member of any groups at this time." & username & "');"
+                msg += "<" & "/script>"
+                Response.Write(msg)
+            Else
+                Dim msg As String
+                msg = "<script language='javascript'>"
+                msg += "alert('" & ex.Message.ToString & "');"
+                msg += "<" & "/script>"
+                Response.Write(msg)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Private Sub GetRecCount()
+        connection.Open()
+        Dim sqlStr As String = "SELECT COUNT(*) AS total FROM rcdetail"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        recCount = cmd.ExecuteScalar()
+
+        sqlStr = "SELECT COUNT(*) AS total FROM rcdetail WHERE uname IS NOT null"
+        cmd.CommandText = sqlStr
+        checkedRecs = cmd.ExecuteScalar()
+        connection.Close()
+    End Sub
+
+    Private Sub PopulateYearList()
+        ddlYear.Items.Clear()
+        ddlYear.Items.Add("Select Year")
+        connection.Open()
+        Dim sqlStr As String = "SELECT YEAR(cdte) AS myyear, COUNT(*) AS total FROM rcdetail GROUP BY YEAR(cdte) ORDER BY 1"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+        While reader.Read()
+            ddlYear.Items.Add(New ListItem(reader("myyear") & " - " & reader("total") & " items", reader("myyear")))
+        End While
+    End Sub
+
+End Class

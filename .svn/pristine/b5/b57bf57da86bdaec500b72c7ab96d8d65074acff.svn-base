@@ -1,0 +1,130 @@
+﻿angular.module('plumApp', ['ngAnimate', 'ui.bootstrap']);
+
+angular.module('plumApp').controller('pluModalCtrl', function ($scope, $uibModal, $http) {
+    $scope.checkSubmit = function (keyEvent) {
+        if (keyEvent.which === 13) {
+            keyEvent.preventDefault();
+            $scope.checkDuplicates(document.getElementById('pluTxt').value);
+        }
+    };
+
+    $scope.checkDuplicates = function (pluno) {
+        $http.post('plu.aspx/CheckDuplicates', angular.toJson({ pluno: pluno })).
+        then(function (response) {
+            var data = JSON.parse(response.data.d);
+
+            if (data === null)
+                alert("PLU number " + pluno + " does not exist!");
+            else {
+                if (data.length > 1)
+                    $scope.loadChoices(data);
+                else
+                    $scope.loadData(data);
+            }
+        });
+    };
+
+    $scope.submitPLU = function () {
+        var pluInfo = {
+            pluno: document.getElementById("PLUlist").options[document.getElementById("PLUlist").selectedIndex].text.split("--")[0].trim(),
+            deptname: document.getElementById("deptlist").options[document.getElementById("deptlist").selectedIndex].text,
+        };
+
+        $http.post('plu.aspx/LoadData', angular.toJson(pluInfo)).
+        then(function (response) {
+            var data = JSON.parse(response.data.d);
+
+            $scope.loadData(data);
+        });
+    };
+
+    $scope.loadData = function (data) {
+        $scope.productData = data;
+
+        var pluInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'PLU-Data.html',
+            controller: 'pluInstanceCtrl',
+            size: 'lg',
+            resolve: {
+                productData: function () {
+                    return $scope.productData;
+                }
+            }
+        });
+    };
+
+    $scope.loadChoices = function (data) {
+        $scope.plus = data;
+
+        var pluInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'pluChoices.html',
+            controller: 'pluInstanceCtrl',
+            size: 'lg',
+            resolve: {
+                productData: function () {
+                    return $scope.plus;
+                }
+            },
+        });
+
+        pluInstance.result.then(function (data) {
+            $http.post('plu.aspx/LoadData', angular.toJson(data)).
+            then(function (response) {
+                $scope.data = JSON.parse(response.data.d);
+
+                $scope.loadData($scope.data);
+            });
+        });
+    };
+});
+
+angular.module('plumApp').controller('pluInstanceCtrl', function ($scope, $uibModalInstance, productData) {
+    $scope.productData = productData;
+
+    if ($scope.productData != null) {
+        $scope.pluValid = true;
+    };
+
+    if (String($scope.productData.UPC).length <= 5)
+        $scope.productData.UPC = "2 " + productData.UPC + " 00000"
+
+    if ($scope.productData.ServSize != null) {
+        $scope.areFacts = true;
+    };
+
+    $scope.select = function (selectedPLU, selectedDept) {
+        $scope.data = {
+            pluno: selectedPLU,
+            deptname: selectedDept
+        };
+
+        $uibModalInstance.close($scope.data);
+    };
+
+    $scope.dismiss = function () {
+        $uibModalInstance.dismiss();
+    };
+
+    $scope.print = function () {
+        $scope.printElement(document.getElementById('modalHeader'));
+        $scope.printElement(document.getElementById('modalBody'));
+        window.print();
+        document.getElementById('printSection').innerHTML = "";
+    };
+
+    $scope.printElement = function (elem) {
+        var domClone = elem.cloneNode(true);
+
+        var $printSection = document.getElementById('printSection');
+
+        if (!$printSection) {
+            var $printSection = document.createElement('div');
+            $printSection.id = 'printSection';
+            document.body.appendChild($printSection);
+        }
+
+        $printSection.appendChild(domClone);
+    };
+});

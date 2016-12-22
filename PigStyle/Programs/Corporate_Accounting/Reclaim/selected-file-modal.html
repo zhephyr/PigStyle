@@ -1,0 +1,29 @@
+﻿<div class="modal-header">
+    <h3>Case Checkout Request</h3>
+</div>
+<div class="modal-body">
+    <table class="menu" style="font-size: 14px;">
+        <thead>
+            <tr>
+                <th>Slot</th>
+                <th>Case End Date</th>
+                <th>Case Type</th>
+                <th>Store Number</th>
+                <th>Box Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{selectedInfo.location}}</td>
+                <td>{{selectedInfo.boxInfo.storageDate}}</td>
+                <td>{{selectedInfo.boxInfo.type}}</td>
+                <td>{{selectedInfo.boxInfo.store}}</td>
+                <td>{{selectedInfo.boxInfo.position}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="submitSelection()">Confirm</button>
+    <button type="button" class="btn btn-danger" ng-click="cancel()">Cancel</button>
+</div>

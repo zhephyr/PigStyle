@@ -1,0 +1,77 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="LateTransmissionSummary.aspx.vb" Inherits="PigStyle.LateTransmissionSummary" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Late Transmission Summary</title>
+    <link href="/CSS/bootstrap.min.css" rel="stylesheet" />
+    <link href="/CSS/base.css" rel="stylesheet" />
+    <link href="/CSS/angular-loading.css" rel="stylesheet" />
+    <script src="/Scripts/angular.min.js"></script>
+    <script src="/Scripts/angular-animate.min.js"></script>
+    <script src="/Scripts/angular-ui/ui-bootstrap-tpls.min.js"></script>
+    
+    <script src="/Scripts/spin.js"></script>
+    <script src="/Scripts/angular-loading.js"></script>
+    <style type="text/css">
+        .modal-body {
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+            .modal-body th, td {
+                padding: .5em;
+                font-weight: bolder;
+            }
+
+            .modal-body thead tr th {
+                border-top: 2px groove darkgrey;
+                border-bottom: 2px groove darkgrey;
+            }
+
+            .modal-body th:nth-child(n+2), td:nth-child(n+2) {
+                text-align: right;
+            }
+
+            .modal-body tbody tr:last-child td {
+                border-bottom: 2px groove darkgrey;
+            }
+
+            .modal-body tfoot tr td:first-child {
+                padding-left: 4em;
+            }
+
+            .modal-body table {
+                padding: 0 1em 0 1em;
+            }
+
+        #totals {
+            font-weight: bold;
+            display: table;
+            width: 100%;
+            padding: 1em;
+            border-bottom: 2px groove darkgrey;
+        }
+    </style>
+</head>
+<body ng-app="LateSumApp">
+    <form id="form1" runat="server" ng-controller="LSCtrl">
+        <div>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,397 @@
+﻿Imports System.Windows.Forms
+Imports System.DirectoryServices
+Imports System.Data.SqlClient
+Imports System.Web.Script.Serialization
+Imports System.IO
+Imports PWutilities.PWutilities
+Imports Newtonsoft.Json
+
+Public Class LateTransmissionReport
+    Inherits System.Web.UI.Page
+
+    Protected dirGroups As List(Of String)
+    Protected permissionType As String
+    Protected options As New StoreAreaOptions
+
+    Shared connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+    Shared connection As SqlConnection = New SqlConnection(connectionStr)
+
+    Structure StoreAreaOptions
+        Public storeList As List(Of String)
+        Public areaList As List(Of String)
+        Public deptList As List(Of Department)
+    End Structure
+
+    Structure Department
+        Public deptName As String
+        Public deptNo As String
+    End Structure
+
+    Structure LateTransInfo
+        Public storeLateTrans As List(Of StoreLateTrans)
+        Public totalTrans As Integer
+        Public numLateTrans As Integer
+        Public perOnTime As Double
+    End Structure
+
+    Structure StoreLateTrans
+        Public storeNo As String
+        Public lateTrans As List(Of LateTrans)
+    End Structure
+
+    Structure LateTrans
+        Public weekday As String
+        Public dept As String
+        Public deptName As String
+        Public schedTime As String
+        Public processTime As String
+    End Structure
+
+    Protected Shared periodData As LateTransInfo
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        'Dim username As String = "pfox"
+        Dim username As String = Split(HttpContext.Current.User.Identity.Name, "\")(1)
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso,DC=fb,DC=com", username)
+
+        If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+            Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+        End If
+
+        If dirGroups.Contains("Corporate Users") Then
+            permissionType = "Corporate"
+        ElseIf dirGroups.Contains("Store Users") Then
+            permissionType = "Store"
+        ElseIf dirGroups.Contains("Domain Users") Then
+            permissionType = "Vendor"
+        End If
+
+        Dim cs As ClientScriptManager = Page.ClientScript
+        Dim csName As String = "showNoPermissionMsg"
+        Dim csScript As New StringBuilder()
+        csScript.Append("<script type=""text/javascript"">")
+        csScript.Append("alert('Invalid Group for " & Split(HttpContext.Current.User.Identity.Name, "\")(1) & ".  For access, please contact the Help Desk at Ext. 4357.');")
+        csScript.Append("window.location = '/Programs/Programs.aspx';")
+        csScript.Append("</script>")
+
+        If Not dirGroups.Contains("Corporate Users") And Not dirGroups.Contains("Store Users") Then
+            If Not cs.IsClientScriptBlockRegistered(Me.[GetType](), "showNoPermissionMsg") Then
+                cs.RegisterClientScriptBlock(Me.[GetType](), csName, csScript.ToString())
+            End If
+        End If
+
+        GetOptions()
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                MessageBox.Show("Selected user isn't a member of any groups at this time.", "No groups listed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Else
+                MessageBox.Show(ex.Message.ToString, "Search Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Private Sub GetOptions()
+
+        options.storeList = GetStoreList(permissionType, dirGroups)
+        options.areaList = GetAreaList(permissionType)
+        options.deptList = GetDeptList(permissionType)
+
+    End Sub
+
+    Private Function GetStoreList(permissionType As String, dirGroups As List(Of String)) As List(Of String)
+        connection.Open()
+
+        Dim storeNo As New List(Of String)
+
+        If permissionType = "Store" Then
+            For Each group In dirGroups
+                If group.StartsWith("store ") Then
+                    storeNo.Add(group.Substring(6, 3))
+                End If
+            Next
+            storeNo.Sort()
+
+        ElseIf permissionType = "Corporate" Then
+            Dim sqlStr As String = "SELECT storenum FROM csrstrlst WHERE activestore = 'Y' ORDER BY storenum;"
+            Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+            Dim reader As SqlDataReader = cmd.ExecuteReader()
+            Dim storeNum As Integer
+
+            While reader.Read()
+                storeNum = reader("storenum")
+                storeNo.Add(storeNum.ToString("D3"))
+            End While
+            reader.Close()
+        End If
+
+        connection.Close()
+        Return storeNo
+    End Function
+
+    Private Function GetAreaList(permissionType As String) As List(Of String)
+        If permissionType = "Corporate" Then
+            connection.Open()
+
+            Dim areas As New List(Of String)
+
+            Dim sqlStr As String = "SELECT mgrname FROM csrdmgr ORDER BY mgrname;"
+            Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+            Dim reader As SqlDataReader = cmd.ExecuteReader()
+
+            While reader.Read()
+                areas.Add(reader("mgrname"))
+            End While
+            reader.Close()
+
+            connection.Close()
+            Return areas
+        End If
+
+        Return Nothing
+    End Function
+
+    Private Function GetDeptList(permissionType As String) As List(Of Department)
+        connection.Open()
+
+        Dim depts As New List(Of Department)
+
+        Dim sqlStr As String = "SELECT deptnum, deptname FROM osdepartments"
+        Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+
+        While reader.Read()
+            Dim dept As Department
+            dept.deptName = reader("deptname")
+            dept.deptNo = reader("deptnum")
+            depts.Add(dept)
+        End While
+        reader.Close()
+
+        connection.Close()
+        Return depts
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetPeriodData(ByVal fromDate As Date, ByVal toDate As Date, _
+                                         ByVal selectedOption As String, ByVal selectedDept As String) As String
+        Dim sqlStr As String
+        Dim storeNo As Integer
+
+        sqlStr = "SELECT s.*, l.city, l.dmanager "
+        sqlStr += "FROM (SELECT s.uptype, s.recd, s.storenum, s.dept, s.xday, s.transtime, s.rpttime, s.boardtime, m.deptname "
+        sqlStr += "FROM schedule AS s INNER JOIN osdepartments AS m ON s.dept = m.deptnum) AS s "
+        sqlStr += "INNER JOIN csrstrlst AS l ON s.storenum = l.storenum "
+        sqlStr += "WHERE (NOT s.boardtime is NULL) AND (NOT s.rpttime is NULL) "
+        sqlStr += "AND s.recd = 'Y' and uptype <> 'B' "
+        sqlStr += "AND transtime >= '" & fromDate.ToString("d") & " 00:00:00' "
+        sqlStr += "AND transtime < '" & toDate.AddDays(1).ToString("d") & " 23:59:59' "
+        sqlStr += "AND DATEDIFF(minute, s.transtime, s.rpttime) >= 30 "
+        If Not selectedOption = "all" Then
+            If Integer.TryParse(selectedOption, storeNo) Then
+                sqlStr += "AND s.storenum = " & storeNo & " "
+            Else
+                Dim storeList As New List(Of String)
+                Dim innerSql = "SELECT storenum FROM csrstrlst AS a INNER JOIN csrdmgr AS b ON a.dmanager = b.mgrnum "
+                innerSql += String.Format("WHERE b.mgrname = '{0}' ORDER BY storenum", selectedOption)
+                Dim innerCmd As New SqlCommand(innerSql, connection)
+                connection.Open()
+                Dim innerReader As SqlDataReader = innerCmd.ExecuteReader()
+                While innerReader.Read()
+                    storeList.Add(innerReader("storenum"))
+                End While
+                innerReader.Close()
+                connection.Close()
+
+                sqlStr += "AND s.storenum IN ('"
+                sqlStr += String.Join("', '", storeList)
+                sqlStr += "') "
+            End If
+        End If
+        If Not selectedDept = "all" Then
+            sqlStr += "AND s.dept = '" & selectedDept & "' "
+        Else
+            sqlStr += "AND s.dept IN (100,110,120,200,300) "
+        End If
+        sqlStr += "ORDER BY s.storenum, s.transtime, s.dept"
+
+        Dim cmd As New SqlCommand(sqlStr, connection)
+        connection.Open()
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+        If reader.HasRows() Then
+            periodData = New LateTransInfo
+            periodData.storeLateTrans = New List(Of StoreLateTrans)
+
+            Dim storeTrans As New StoreLateTrans()
+            Dim transList As New List(Of LateTrans)
+            While reader.Read()
+                periodData.numLateTrans += 1
+                Dim lateTrans As New LateTrans()
+
+                If storeTrans.storeNo Is Nothing Then
+                    storeTrans.storeNo = reader("storenum")
+                ElseIf Not storeTrans.storeNo = reader("storenum") Then
+                    storeTrans.lateTrans = transList
+                    periodData.storeLateTrans.Add(storeTrans)
+                    storeTrans = New StoreLateTrans()
+                    transList = New List(Of LateTrans)
+                    storeTrans.storeNo = reader("storenum")
+                End If
+
+                lateTrans.weekday = reader("xday")
+                lateTrans.dept = reader("dept")
+                lateTrans.deptName = reader("deptname")
+                lateTrans.schedTime = DateTime.Parse(reader("transtime")).ToString("MM/dd/yyyy hh:mm:ss tt")
+                If reader("uptype").ToString.ToUpper = "U" Then
+                    lateTrans.processTime = "Outside Order Window or No Order Sent"
+                Else
+                    lateTrans.processTime = DateTime.Parse(reader("rpttime")).ToString("MM/dd/yyyy hh:mm:ss tt")
+                End If
+                transList.Add(lateTrans)
+            End While
+
+            storeTrans.lateTrans = transList
+            periodData.storeLateTrans.Add(storeTrans)
+            reader.Close()
+
+            sqlStr = "SELECT COUNT(*) FROM schedule AS s INNER JOIN csrstrlst AS l "
+            sqlStr += "ON s.storenum = l.storenum "
+            sqlStr += "WHERE (NOT s.boardtime is NULL) AND (NOT s.rpttime is NULL) "
+            sqlStr += "AND s.recd = 'Y' and uptype <> 'B' "
+            sqlStr += "AND transtime >= '" & fromDate.ToString("d") & " 00:00:00' "
+            sqlStr += "AND transtime < '" & toDate.AddDays(1).ToString("d") & " 23:59:59' "
+            If Not selectedOption = "all" Then
+                If Integer.TryParse(selectedOption, storeNo) Then
+                    sqlStr += "AND s.storenum = " & storeNo & " "
+                Else
+                    Dim storeList As New List(Of String)
+                    Dim innerSql = "SELECT storenum FROM csrstrlst AS a INNER JOIN csrdmgr AS b ON a.dmanager = b.mgrnum "
+                    innerSql += String.Format("WHERE b.mgrname = '{0}' ORDER BY storenum", selectedOption)
+                    Dim innerCmd As New SqlCommand(innerSql, connection)
+                    Dim innerReader As SqlDataReader = innerCmd.ExecuteReader()
+                    While innerReader.Read()
+                        storeList.Add(innerReader("storenum"))
+                    End While
+                    innerReader.Close()
+                    connection.Close()
+
+                    sqlStr += "AND s.storenum IN ('"
+                    sqlStr += String.Join("', '", storeList)
+                    sqlStr += "') "
+                End If
+            End If
+
+            If selectedDept = "all" Then
+                sqlStr += "AND s.dept IN (100,110,120,200,300)"
+            Else
+                sqlStr += "AND s.dept = " & selectedDept
+            End If
+
+            cmd.CommandText = sqlStr
+            periodData.totalTrans = cmd.ExecuteScalar()
+
+            periodData.perOnTime = 1 - (periodData.numLateTrans / periodData.totalTrans)
+        Else
+            connection.Close()
+            Return False
+        End If
+
+        connection.Close()
+        Try
+            Dim sb As New StringBuilder()
+
+            Using sw As New StringWriter(sb)
+                Using writer As JsonWriter = New JsonTextWriter(sw)
+                    Dim serializer As New JsonSerializer()
+                    serializer.Serialize(writer, periodData)
+                    writer.Flush()
+                    sw.Flush()
+                End Using
+            End Using
+
+            Const CHUNK_SIZE = 1000
+            Dim returnStr As String = ""
+            Dim ctr = 0
+            While ctr < (sb.Length - CHUNK_SIZE)
+                returnStr += sb.ToString(ctr, CHUNK_SIZE)
+                ctr += CHUNK_SIZE
+            End While
+            returnStr += sb.ToString(ctr, sb.Length - ctr)
+
+            Return returnStr
+        Catch ex As Exception
+            Dim response As HttpResponse = HttpContext.Current.Response
+            response.StatusCode = 500
+            Return String.Format("{0}: {1}", ex.GetType.ToString, ex.Message)
+        End Try
+    End Function
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function EmailReport(ByVal fromDate As Date, ByVal toDate As Date, ByVal criteria As String, ByVal dept As String)
+        Dim ttl1 As Integer = 0
+        Dim ttl2 As Integer = 0
+        Dim ttl3 As Integer = 0
+
+        If Not Directory.Exists("\\SSOHOME\home\programs\Vbnet\Web\PigStyle\PigStyle\Programs\Customer_Service_Reports\Customer Service Reports") Then
+            Directory.CreateDirectory("\\SSOHOME\home\programs\Vbnet\Web\PigStyle\PigStyle\Programs\Customer_Service_Reports\Customer Service Reports")
+        End If
+
+        Dim ltrFile As String = "\\SSOHOME\home\programs\Vbnet\Web\PigStyle\PigStyle\Programs\Customer_Service_Reports\Customer Service Reports\CSR Totals Report.csv"
+
+        Try
+            Using ltrCSV As New IO.StreamWriter(ltrFile, False)
+                If periodData.storeLateTrans IsNot Nothing Then
+                    ltrCSV.WriteLine("Store/Area:," & criteria & ",Depts:," & dept)
+                    ltrCSV.WriteLine()
+                    For Each store In periodData.storeLateTrans
+                        ltrCSV.WriteLine("Store: " & store.storeNo)
+                        ltrCSV.WriteLine("Day,Dept,Scheduled Time,Processed Time")
+                        For Each trans In store.lateTrans
+                            ltrCSV.WriteLine(String.Join(",", trans.weekday, trans.dept & " - " & trans.deptName, trans.schedTime, trans.processTime))
+                        Next
+                        ltrCSV.WriteLine()
+                    Next
+                    ltrCSV.WriteLine(String.Format("Total Trans:,{0},Late Processed:,{1},% on Time:,{2}", periodData.totalTrans, periodData.numLateTrans, periodData.perOnTime))
+                End If
+            End Using
+
+            Dim sendTo As String = Split(HttpContext.Current.User.Identity.Name, "\")(1) & "@shopthepig.com"
+            Email.Send("webAdmin@shopthepig.com", sendTo, String.Format("Customer Service Report {0} - {1}", fromDate.ToString("MM/dd/yyyy"), toDate.ToString("MM/dd/yyyy")), _
+                       String.Format("Customer Service Report for {0} for the period: {1} - {2}", criteria, fromDate.ToString("MM/dd/yyyy"), toDate.ToString("MM/dd/yyyy")), "", ltrFile)
+
+            My.Computer.FileSystem.DeleteFile(ltrFile)
+
+            Return "File creation was a success. Emailed to " & sendTo
+        Catch ex As Exception
+            Return String.Format("Unable to send file. Please call the Helpdesk." & vbCrLf & "Exception {0}", ex.Message)
+        End Try
+    End Function
+
+End Class

@@ -1,0 +1,65 @@
+﻿<div class="modal-header">
+    <button class="close pull-right" type="button" ng-click="close()"><span class="glyphicon glyphicon-remove" /></button>
+    <h2 class="modal-title" style="color: #0000CD;">Late Transactions Report</h2>
+    <h3 class="modal-title" style="color: #0000CD;">{{lateTransInfos.fromDate}} - {{lateTransInfos.toDate}}</h3>
+    <br />
+    <div>
+        Jump to: 
+        <select ng-model="elementId" ng-change="jumpTo()">
+            <option value="init" disabled="disabled">Select Store</option>
+            <option value="" disabled="disabled" class="dropdown-header">--------------------</option>
+            <option ng-repeat="store in lateTransInfos.storeLateTrans" value="{{store.storeNo}}">Store #{{store.storeNo}}</option>
+        </select>
+    </div>
+</div>
+<div class="modal-body">
+    <div style="width: 100%; display: inline-block; padding: 0 5em;">
+        <h3 style="float: left; margin: 0;">Store/Area: {{lateTransInfos.criteria}}</h3>
+        <h3 style="float: right; margin: 0;">Dept(s): {{lateTransInfos.dept}}</h3>
+    </div>
+    <div ng-repeat="store in lateTransInfos.storeLateTrans" id="{{store.storeNo}}">
+        <h4 style="color: #8B0000;">Store #{{store.storeNo}}</h4>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th style="width: 5%; min-width: 36px;">Day</th>
+                    <th style="width: 25%;">Dept</th>
+                    <th style="width: 35%;">Scheduled Time</th>
+                    <th style="width: 35%;">Processed Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="trans in store.lateTrans track by $index">
+                    <td>{{trans.weekday}}</td>
+                    <td>{{trans.dept}} - {{trans.deptName}}</td>
+                    <td>{{trans.schedTime}}</td>
+                    <td>{{trans.processTime}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <table>
+        <tfoot>
+            <tr>
+                <td>
+                    <br />
+                </td>
+                <td>% On Time:</td>
+                <td>Total Transactions:</td>
+                <td>Num of Trans Late:</td>
+            </tr>
+            <tr>
+                <td>
+                    <br />
+                </td>
+                <td>{{lateTransInfos.perOnTime * 100 | number : 0.00}}%</td>
+                <td>{{lateTransInfos.totalTrans}}</td>
+                <td>{{lateTransInfos.numLateTrans}}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-success" type="button" ng-click="requestFile()">Email Report</button>
+    <button class="btn btn-primary" type="button" ng-click="close()">Close</button>
+</div>

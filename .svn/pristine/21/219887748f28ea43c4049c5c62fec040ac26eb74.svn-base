@@ -1,0 +1,421 @@
+﻿<div class="modal-body">
+    <table class="inventory">
+        <thead>
+            <tr>
+                <th style="font-size: 24px">Slot {{palletInfo.palletLoc}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <div class="text-center" style="background-color: #DFFFDE; padding-bottom: 5px;">
+                        <uib-pagination total-items="totalPages" items-per-page="1" ng-model="currentPage" max-size="5" class="pagination" boundary-link-numbers="true" rotate="true" force-ellipses="true"></uib-pagination>
+                        <br />
+                        <input type="number" class="form-control input-sm" ng-model="currentPage" min="1" max="{{totalPages}}" style="width: 6%; text-align: center; display: inline;" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; font-size: 15px; text-align: center;"><b>Front</b></td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="width: 100%">
+                        <tr>
+                            <td style="width: 50%">
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF10.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" ng-click="checkSelection(palletInfo.palletLoc, palletInfo.boxF10)" style="padding: 0;">
+                                                    {{palletInfo.boxF10.type}} - {{palletInfo.boxF10.store}}
+                                                </button>
+                                                <br />
+                                                Box 10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF11.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF11.type}} - {{palletInfo.boxF11.store}}
+                                                </button>
+                                                <br />
+                                                Box 11
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF12.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF12.type}} - {{palletInfo.boxF12.store}}
+                                                </button>
+                                                <br />
+                                                Box 12
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF07.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF07.type}} - {{palletInfo.boxF07.store}}
+                                                </button>
+                                                <br />
+                                                Box 07
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF08.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF08.type}} - {{palletInfo.boxF08.store}}
+                                                </button>
+                                                <br />
+                                                Box 08
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF09.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF09.type}} - {{palletInfo.boxF09.store}}
+                                                </button>
+                                                <br />
+                                                Box 09
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF04.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF04.type}} - {{palletInfo.boxF04.store}}
+                                                </button>
+                                                <br />
+                                                Box 04
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF05.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF05.type}} - {{palletInfo.boxF05.store}}
+                                                </button>
+                                                <br />
+                                                Box 05
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF06.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF06.type}} - {{palletInfo.boxF06.store}}
+                                                </button>
+                                                <br />
+                                                Box 06
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF01.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF01.type}} - {{palletInfo.boxF01.store}}
+                                                </button>
+                                                <br />
+                                                Box 01
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF02.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF02.type}} - {{palletInfo.boxF02.store}}
+                                                </button>
+                                                <br />
+                                                Box 02
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxF03.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxF03.type}} - {{palletInfo.boxF03.store}}
+                                                </button>
+                                                <br />
+                                                Box 03
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <td style="vertical-align: middle;">
+                                    <img id="frontImg" ng-src="http://freshnet/production/Reclaim/Images/{{palletInfo.frontPic}}" style="max-width: 100%; height: auto;" />
+                                </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 5px; font-size: 15px; text-align: center;"><b>Back</b></td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="width: 100%">
+                        <tr>
+                            <td style="width: 50%">
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB10.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB10.type}} - {{palletInfo.boxB10.store}}
+                                                </button>
+                                                <br />
+                                                Box 10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB11.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB11.type}} - {{palletInfo.boxB11.store}}
+                                                </button>
+                                                <br />
+                                                Box 11
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB12.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB12.type}} - {{palletInfo.boxB12.store}}
+                                                </button>
+                                                <br />
+                                                Box 12
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB07.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB07.type}} - {{palletInfo.boxB07.store}}
+                                                </button>
+                                                <br />
+                                                Box 07
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB08.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB08.type}} - {{palletInfo.boxB08.store}}
+                                                </button>
+                                                <br />
+                                                Box 08
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB09.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB09.type}} - {{palletInfo.boxB09.store}}
+                                                </button>
+                                                <br />
+                                                Box 09
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB04.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB04.type}} - {{palletInfo.boxB04.store}}
+                                                </button>
+                                                <br />
+                                                Box 04
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB05.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB05.type}} - {{palletInfo.boxB05.store}}
+                                                </button>
+                                                <br />
+                                                Box 05
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB06.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB06.type}} - {{palletInfo.boxB06.store}}
+                                                </button>
+                                                <br />
+                                                Box 06
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB01.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB01.type}} - {{palletInfo.boxB01.store}}
+                                                </button>
+                                                <br />
+                                                Box 01
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB02.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB02.type}} - {{palletInfo.boxB02.store}}
+                                                </button>
+                                                <br />
+                                                Box 02
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <div class="details">
+                                        <div class="vertical">
+                                            <div class="center">
+                                                {{palletInfo.boxB03.storageDate}}
+                                                <br />
+                                                <button type="button" class="btn btn-link" style="padding: 0;">
+                                                    {{palletInfo.boxB03.type}} - {{palletInfo.boxB03.store}}
+                                                </button>
+                                                <br />
+                                                Box 03
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="vertical-align: middle; text-align: center;">
+                                <img id="backImg" ng-src="http://freshnet/production/Reclaim/Images/{{palletInfo.backPic}}" style="max-width: 100%; height: auto;" />
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    <uib-pagination total-items="totalPages" items-per-page="1" ng-model="currentPage" max-size="5" class="pagination" boundary-link-numbers="true" rotate="true" force-ellipses="true"></uib-pagination>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-danger" ng-click="cancel()">Cancel</button>
+</div>

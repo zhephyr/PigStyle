@@ -1,0 +1,118 @@
+﻿Imports System.Windows.Forms
+Imports System.DirectoryServices
+Imports System.Data.SqlClient
+Imports System.Web.Script.Serialization
+Imports System.IO
+
+Public Class LateTransmissionSummary
+    Inherits System.Web.UI.Page
+
+    Protected dirGroups As List(Of String)
+    Protected permissionType As String
+    Protected departments As New List(Of String)
+
+    Shared connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+    Shared connection As SqlConnection = New SqlConnection(connectionStr)
+
+    Structure StoreSummary
+        Public storeNo As String
+        Public city As String
+        Public numRecords As String
+        Public numLate As String
+        Public perOnTime As String
+    End Structure
+
+    Structure DistrictInfo
+        Public districtName As String
+        Public summaryList As List(Of StoreSummary)
+        Public totRecords As Integer
+        Public totLate As Integer
+        Public avgPercent As Double
+    End Structure
+
+    Protected Shared districtList As List(Of String)
+    Protected Shared periodInfo As DistrictInfo
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        Dim username As String = Split(HttpContext.Current.User.Identity.Name, "\")(1)
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso.DC=fb.DC=com", username)
+
+        If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+            Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+        End If
+
+        If dirGroups.Contains("Corporate Users") Then
+            permissionType = "Corporate"
+        ElseIf dirGroups.Contains("Store Users") Then
+            permissionType = "Store"
+        ElseIf dirGroups.Contains("Domain Users") Then
+            permissionType = "Vendor"
+        End If
+
+        Dim cs As ClientScriptManager = Page.ClientScript
+        Dim csName As String = "showNoPermissionMsg"
+        Dim csScript As New StringBuilder()
+        csScript.Append("<script type=""text/javascript"">")
+        csScript.Append(("alert('Invalid Group for " & Split(HttpContext.Current.User.Identity.Name, "\")(1) & ".  For access, please contact the Help Desk at Ext. 4357.');")
+        csScript.Append("window.location = '/Programs/Programs.aspx';")
+        csScript.Append("</script>")
+
+        If Not dirGroups.Contains("Corporate Users") And Not dirGroups.Contains("Store Users") Then
+            If Not cs.IsClientScriptBlockRegistered(Me.[GetType](), "showNoPermissionMsg") Then
+                cs.RegisterClientScriptBlock(Me.[GetType](), csName, csScript.ToString())
+            End If
+        End If
+
+        districtList = GetDistricts()
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                MessageBox.Show("Selected user isn't a member of any groups at this time.", "No groups listed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Else
+                MessageBox.Show(ex.Message.ToString, "Search Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Private Function GetDistricts() As List(Of String)
+        Dim sqlStr = "SELECT mgrname FROM csrdmgr ORDER BY mgrnum"
+        Dim cmd = New SqlCommand(sqlStr, connection)
+        connection.Open()
+        Dim districtList As New List(Of String)
+        Dim reader As SqlDataReader = cmd.ExecuteReader()
+
+        While reader.Read()
+            districtList.Add(reader("mgrname"))
+        End While
+
+        Return districtList
+    End Function
+
+End Class

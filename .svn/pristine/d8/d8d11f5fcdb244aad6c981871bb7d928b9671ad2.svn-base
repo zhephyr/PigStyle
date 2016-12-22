@@ -1,0 +1,214 @@
+﻿var CSRApp = angular.module('CSReportApp', ['ngAnimate', 'ui.bootstrap', 'darthwade.loading']);
+
+CSRApp.controller('CSRCtrl', function ($scope, $http, $filter, $loading, $uibModal) {
+    $scope.dateOptions = {
+        showWeeks: false,
+        minDate: new Date(2006, 0, 25)
+    };
+
+    $scope.altInputFormats = ['M!/d!/yyyy'];
+
+    $scope.fromDate = {
+        dt: Date.now(),
+        opened: false,
+    };
+
+    $scope.toDate = {
+        dt: Date.now(),
+        opened: false,
+    };
+
+    $scope.openFrom = function () {
+        $scope.fromDate.opened = true;
+    };
+
+    $scope.openTo = function () {
+        $scope.toDate.opened = true;
+    };
+
+    $scope.selectedOption = 'init';
+
+    $scope.verifyDates = function () {
+        var dateMin = new Date(2006, 0, 25);
+
+        if ($scope.fromDate.dt < dateMin) {
+            alert("From Date is earlier than the minimum date allowed.\nChanging From Date to minimum date...");
+            $scope.fromDate.dt = dateMin;
+        };
+
+        if ($scope.toDate.dt < $scope.fromDate.dt) {
+            alert("To Date is earlier than From Date. Please change.");
+            return false;
+        };
+
+        if ($scope.toDate.dt > Date.now()) {
+            alert("To Date is later than current date.\nChanging the To Date to current date.");
+            $scope.toDate.dt = Date.now();
+        };
+
+        return true;
+    };
+
+    $scope.showReport = function () {
+        if (!$scope.verifyDates())
+            return;
+
+        if ($scope.selectedOption === "init" || $scope.selectedOption === "") {
+            alert("That is not a valid Store/Area selection.");
+            return;
+        };
+
+        $loading.start('modalOpen');
+        var fromDate = $filter('date')($scope.fromDate.dt, "MM/dd/yyyy");
+        var toDate = $filter('date')($scope.toDate.dt, "MM/dd/yyyy");
+
+        $http.post('CustomerServReport.aspx/GetPeriodData', angular.toJson({ fromDate: fromDate, toDate: toDate, selectedOption: $scope.selectedOption })).
+        then(function (response) {
+            var storeInfos = JSON.parse(response.data.d);
+            if (storeInfos === null) {
+                $loading.finish('modalOpen');
+                alert("There was no information found.");
+            } else {
+                for (i = 0; i < storeInfos.length; i++) {
+                    $scope.collateData(storeInfos[i]);
+                };
+
+                storeInfos.fromDate = fromDate;
+                storeInfos.toDate = toDate;
+
+                var csrInstance = $uibModal.open({
+                    animation: true,
+                    templateUrl: 'csr-template.html',
+                    controller: 'csrInstanceCtrl',
+                    size: 'lg',
+                    resolve: {
+                        storeInfos: function () {
+                            return storeInfos;
+                        }
+                    }
+                });
+
+                csrInstance.rendered.then(function () {
+                    for (var i = 0; i < storeInfos.length; i++) {
+                        if (storeInfos[i].transmissions != null) {
+                            for (var j = 0; j < storeInfos[i].transmissions.length; j++) {
+                                if (storeInfos[i].transmissions[j].numLate != 0) {
+                                    document.getElementById(storeInfos[i].desc + "-" + storeInfos[i].transmissions[j].deptNo).className += ' selectable';
+                                };
+                            };
+                        };
+                    };
+
+                    $loading.finish('modalOpen');
+
+                });
+            };
+        });
+    };
+
+    $scope.collateData = function (storeInfo) {
+        var transTtl = {
+            numTrans: 0,
+            numLate: 0,
+            avgPerc: 0,
+        };
+        var delivTtl = {
+            numDeliv: 0,
+            caseTtl: 0,
+            avgCase: 0,
+        };
+        var addonTtl = {
+            callTtl: 0,
+            caseTtl: 0,
+        };
+
+        if (storeInfo.transmissions != null) {
+            for (x = 0; x < storeInfo.transmissions.length; x++) {
+                transTtl.numTrans += storeInfo.transmissions[x].numTrans;
+                transTtl.numLate += storeInfo.transmissions[x].numLate;
+            };
+            transTtl.avgPerc = 1 - (transTtl.numLate / transTtl.numTrans);
+            storeInfo.transmissions.ttlTransmissions = transTtl;
+        };
+
+        if (storeInfo.deliveries != null) {
+            for (y = 0; y < storeInfo.deliveries.length; y++) {
+                delivTtl.numDeliv += storeInfo.deliveries[y].numDeliveries;
+                delivTtl.caseTtl += storeInfo.deliveries[y].ttlCases;
+            };
+            delivTtl.avgCase = delivTtl.caseTtl / delivTtl.numDeliv;
+            storeInfo.deliveries.ttlDeliveries = delivTtl;
+        };
+
+        if (storeInfo.custAddOns != null) {
+            for (z = 0; z < storeInfo.custAddOns.length; z++) {
+                addonTtl.callTtl += storeInfo.custAddOns[z].numCalls;
+                addonTtl.caseTtl += storeInfo.custAddOns[z].ttlCases;
+            }
+            storeInfo.custAddOns.ttlAddOns = addonTtl;
+        };
+    };
+});
+
+CSRApp.controller('csrInstanceCtrl', function ($scope, $http, $uibModalInstance, $uibModal, $loading, storeInfos) {
+    $scope.storeInfos = storeInfos;
+
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
+
+    $scope.requestFile = function () {
+        var e = document.getElementById('criteriaSelector');
+
+        $http.post('CustomerServReport.aspx/EmailReport', angular.toJson({ fromDate: $scope.storeInfos.fromDate, toDate: $scope.storeInfos.toDate, criteriaInfo: e.options[e.selectedIndex].text })).
+        then(function (response) {
+            alert(response.data.d);
+        }, function (response) {
+            alert(response.data.d);
+        });
+    };
+
+    $scope.showLateTrans = function (index, parentIndex) {
+        if ($scope.storeInfos[parentIndex].transmissions[index].numLate == 0) {
+            return;
+        };
+
+        $loading.start('modalOpen');
+
+        $http.post('CustomerServReport.aspx/GetLateTrans', angular.toJson({ fromDate: $scope.storeInfos.fromDate, toDate: $scope.storeInfos.toDate, storeNo: $scope.storeInfos[parentIndex].desc, deptNo: $scope.storeInfos[parentIndex].transmissions[index].deptNo })).
+        then(function (response) {
+            var lateTrans = JSON.parse(response.data.d);
+
+            lateTrans.storeNo = $scope.storeInfos[parentIndex].desc;
+            lateTrans.city = $scope.storeInfos[parentIndex].city;
+            lateTrans.manager = $scope.storeInfos[parentIndex].manager;
+            lateTrans.fromDate = $scope.storeInfos[parentIndex].fromDate;
+            lateTrans.toDate = $scope.storeInfos[parentIndex].toDate;
+            lateTrans.transInfo = $scope.storeInfos[parentIndex].transmissions[index];
+
+            var lateTransInstance = $uibModal.open({
+                animation: true,
+                templateUrl: 'latetrans-subtemplate.html',
+                controller: 'lateTransCtrl',
+                size: 'lg',
+                resolve: {
+                    lateTrans: function () {
+                        return lateTrans;
+                    }
+                }
+            });
+
+            lateTransInstance.rendered.then(function () {
+                $loading.finish('modalOpen');
+            });
+        });
+    };
+});
+
+CSRApp.controller('lateTransCtrl', function ($scope, $uibModalInstance, lateTrans) {
+    $scope.lateTrans = lateTrans;
+
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
+});

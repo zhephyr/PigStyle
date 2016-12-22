@@ -1,0 +1,187 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="frmDataProcessing.aspx.vb" Inherits="PigStyle.frmDataProcessing" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>DP Billing</title>
+    <link href="../CSS/bootstrap.css" rel="stylesheet" />
+    <link href="../CSS/base.css" rel="stylesheet" />
+    <script src="../Scripts/angular.js"></script>
+    <script src="../Scripts/angular-animate.js"></script>
+    <script src="../Scripts/angular-ui/ui-bootstrap-tpls.js"></script>
+    <script src="../Scripts/billing-modals.js"></script>
+    <style type="text/css">
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            font: 15px;
+            background: #b8d1f3;
+            border-bottom: 1px solid #ccc;
+            padding: 10px 25px;
+        }
+
+            li:nth-child(even) {
+                background: #dae5f4;
+            }
+
+            li:nth-child(odd) {
+                background: #b8d1f3;
+            }
+
+            li:last-child {
+                border: none;
+            }
+
+            li a {
+                text-decoration: none;
+                color: #000;
+                display: block;
+                -webkit-transition: font-size 0.3s ease, background-color 0.3s ease;
+                -moz-transition: font-size 0.3s ease, background-color 0.3s ease;
+                -o-transition: font-size 0.3s ease, background-color 0.3s ease;
+                -ms-transition: font-size 0.3s ease, background-color 0.3s ease;
+                transition: font-size 0.3s ease, background-color 0.3s ease;
+            }
+
+                li a:hover {
+                    font-size: 20px;
+                    color: inherit;
+                }
+    </style>
+</head>
+<body ng-app="billingApp">
+    <div id="container">
+        <div id="header">
+            <img src="../images/webpig.jpg" />
+            <div class="text" style="text-align: center">
+                <h1>DP Billing</h1>
+            </div>
+        </div>
+        <div id="breadcrumbs">
+            <a href="../Startup.aspx">Home</a>
+            <a href="Programs.aspx">Programs</a>
+            <a href="BSSGapp.aspx">BSSG Apps</a>
+            <a href="frmDataProcessing.aspx">DP Billing</a>
+        </div>
+        <div id="main">
+            <div id="nav">
+                <%If permissionType = "Store" Then%>
+                <a href="../Startup.aspx" class="button">Home</a>
+                <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                <a href="Programs(store)" class="button">Programs</a>
+                <a href="#" class="button">General Info</a>
+                <a href="#" class="button">Employee Info</a>
+                <a href="#" class="button">Web Links</a>
+                <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                <%ElseIf permissionType = "Corporate" Then%>
+                <a href="../Startup.aspx" class="button">Home</a>
+                <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                <a href="Programs.aspx" class="button">Programs</a>
+                <a href="#" class="button">Meeting Rooms</a>
+                <a href="#" class="button">Employee Info</a>
+                <a href="#" class="button">General Info</a>
+                <a href="#" class="button">Project Info</a>
+                <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                <a href="#" class="button">Web Links</a>
+                <a href="#" class="button">Help Desk Rpt</a>
+                <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                <%ElseIf permissionType = "Vendor" Then%>
+                <a href="../Startup.aspx" class="button">Home</a>
+                <a href="#" class="button">General Info</a>
+                <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                <%End If%>
+            </div>
+            <div id="content" class="onerow">
+                <div class="col2">
+                    <br />
+                </div>
+                <div class="col3" ng-controller="StoreBillingCtrl">
+                    <br />
+                    <br />
+                    <button class="button" ng-click="openStoreBilling()">Store Billing</button>
+                    <script type="text/ng-template" id="storeBillingContent.html">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Store Billing</h3>
+                        </div>
+                        <div class="modal-body">
+                            <ul>
+                                <li>
+                                    <a href="DP_Billing/frmStoreStandardCopier.aspx">Standard Copier Charges</a>
+                                </li>
+                                <li>
+                                    <a href="DP_Billing/frmStoreColorCopierCharges.aspx">Color Copier Charges</a>
+                                </li>
+                                <li>
+                                    <a href="DP_Billing/frmStorePrintSupplies.aspx">Store Print Supplies</a>
+                                </li>
+                                <li>
+                                    <a href="DP_Billing/frmStorePadCharges.aspx">Store Pad Charges</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" ng-click="close()">Close</button>
+                        </div>
+                    </script>
+                </div>
+                <div class="col2">
+                    <br />
+                </div>
+                <div class="col3" ng-controller="OfficeBillingCtrl">
+                    <br />
+                    <br />
+                    <button class="button" ng-click="openOfficeBilling()">Office Billing</button>
+                    <script type="text/ng-template" id="officeBillingContent.html">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Office Billing</h3>
+                        </div>
+                        <div class="modal-body">
+                            <ul>
+                                <li>
+                                    <a href="DP_Billing/frmOfficeStandardCopier.aspx">Standar Copier Charges</a>
+                                </li>
+                                <li>
+                                    <a href="DP_Billing/frmOfficeColorCopierCharges.aspx">Color Copier Charges</a>
+                                </li>
+                                <li>
+                                    <a href="DP_Billing/frmOfficePaperUsage.aspx">Office Paper Usage</a>
+                                </li>
+                                <li>
+                                    <a href="DP_Billing/frmOfficePadCharges.aspx">Office Pad Charges</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" ng-click="close()">Close</button>
+                        </div>
+                    </script>
+                </div>
+                <div class="col2">
+                    <br />
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <%= DateTime.Now.ToLongDateString()%>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+﻿angular.module('plumApp', ['ngAnimate', 'ui.bootstrap']);
+
+angular.module('plumApp').controller('pluModalCtrl', function ($scope, $uibModal) {
+
+    $scope.productData = {};
+
+    $scope.loadData = function () {
+        $scope.productData = JSON.parse(document.getElementById('nutritionData').value);
+
+        if ($scope.productData != null) {
+            $scope.pluValid = true;
+        };
+
+        if ($scope.productData.ServSize != null) {
+            $scope.areFacts = true;
+        };
+
+        var pluInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'PLU-Data.html',
+            controller: 'pluInstanceCtrl',
+            size: 'lg',
+            resolve: {
+                productData: function () {
+                    return $scope.productData;
+                }
+            }
+        });
+    };
+});
+
+angular.module('plumApp').controller('pluInstanceCtrl', function ($scope, $uibModalInstance, productData) {
+    $scope.productData = productData;
+
+    if ($scope.productData != null) {
+        $scope.pluValid = true;
+    };
+
+    if ($scope.productData.ServSize != null) {
+        $scope.areFacts = true;
+    };
+
+    $scope.close = function () {
+        $uibModalInstance.close();
+    };
+});

@@ -1,0 +1,268 @@
+﻿Imports System.DirectoryServices
+Imports System.Windows.Forms
+Imports System.Data.SqlClient
+Imports System.Web.Script.Serialization
+
+Public Class HansenMenu
+    Inherits System.Web.UI.Page
+
+    Public dirGroups As List(Of String)
+    Public permissionType As String
+
+    Dim connectionStr As String = "Data Source=DBWHPROD;Persist Security Info=False;User ID=sa;Password=2006Sql;Initial Catalog=rla;"
+    Dim connection As New SqlConnection(connectionStr)
+
+    Structure ReportData
+        Public DateField As String
+        Public Deptp As String
+        Public Val_desc As String
+        Public Std_per_lb_rate
+        Public TareF As String
+        Public Quantityp As String
+        Public Weightp As String
+        Public Costp As String
+        Public Tare_Costp As String
+    End Structure
+
+    Dim AggregateReport As List(Of ReportData) = New List(Of ReportData)
+    Dim YearlyReport As List(Of ReportData) = New List(Of ReportData)
+    Dim MonthlyReport As List(Of ReportData) = New List(Of ReportData)
+    Dim WeeklyReport As List(Of ReportData) = New List(Of ReportData)
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        Response.Buffer = True
+        Dim username As String = Request.LogonUserIdentity.Name.ToString()
+        Dim n As Integer = username.IndexOf("\")
+        username = username.Substring(n + 1)
+
+        connection.Open()
+        Dim strSql As String = "SELECT * FROM hansen_uname where uname='" & Trim(username) & "'"
+        Dim command As New SqlCommand(strSql, connection)
+        Dim dr As SqlDataReader = command.ExecuteReader()
+        'If Not dr.HasRows Then
+        '    Response.Write("<p><b><center>Sorry, " & username & " you do not have access to this program!</center></b>")
+        '    Response.Write("<p><b><center>For access, please contact the Help Desk at extension 4357</center></b>")
+        '    Response.End()
+        'End If
+        connection.Close()
+
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso,DC=fb,DC=com", System.Environment.UserName)
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                MessageBox.Show("Selected user isn't a member of any groups at this time.", "No groups listed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Else
+                MessageBox.Show(ex.Message.ToString, "Search Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Protected Sub GetResults(ByVal sender As Object, ByVal e As System.EventArgs)
+        Dim username As String = Request.LogonUserIdentity.Name.ToString()
+        username = "SSO.COM/TJOHNSON"
+        Dim serializer As New JavaScriptSerializer(New SimpleTypeResolver())
+
+        Dim strSQL As String = "select rptdept as Deptp, deptdesc as val_desc, deptrate as std_per_lb_rate, "
+        strSQL = strSQL & " tarerate as tareF,"
+        strSQL = strSQL & " sum(rpt_qty) as Quantityp, sum(rpt_weight) as Weightp, sum(rpt_cost) as Costp, "
+        strSQL = strSQL & " sum(rpt_tare_cost) as Tare_Costp "
+        strSQL = strSQL & " from hansen_rpt_table "
+        strSQL = strSQL & " where userid = '" & username & "'"
+        strSQL = strSQL & " and rpt_doc_date >='" & startDate.Value & " 12:00:00 AM'"  'backup 6 days would reach Sunday
+        strSQL = strSQL & " and rpt_doc_date <= '" & endDate.Value & " 12:00:00 AM'"  'endDate is Saturday
+        strSQL = strSQL & " group by rptdept, deptrate, tarerate, deptdesc"
+        strSQL = strSQL & " order by rptdept"
+        Dim command As New SqlCommand(strSQL, connection)
+
+        connection.Open()
+        Dim reader As SqlDataReader = command.ExecuteReader()
+
+        While reader.Read()
+            Dim dataRow As ReportData
+            dataRow.Deptp = reader("Deptp")
+            dataRow.Val_desc = reader("val_desc")
+            dataRow.Std_per_lb_rate = reader("std_per_lb_rate")
+            dataRow.TareF = reader("tareF")
+            dataRow.Quantityp = reader("Quantityp")
+            dataRow.Weightp = reader("Weightp")
+            dataRow.Costp = reader("Costp")
+            dataRow.Tare_Costp = reader("Tare_Costp")
+            AggregateReport.Add(dataRow)
+        End While
+
+        reader.Close()
+        aggregateData.Value = serializer.Serialize(AggregateReport)
+
+        Dim endDateArr() As String = endDate.Value.Split("/")
+        Dim endYear As Integer = endDateArr(2)
+        Dim endMonth As Integer = endDateArr(0)
+        Dim endDay As Integer = endDateArr(1)
+
+        Dim startDateArr() As String = startDate.Value.Split("/")
+        Dim startYear As Integer = startDateArr(2)
+        Dim startMonth As Integer = startDateArr(0)
+        Dim startDay As Integer = startDateArr(1)
+
+        Dim tempStartDate As New Date(endYear, 1, 1)
+        Dim tempEndDate As New Date(endYear, endMonth, endDay)
+
+        'Get Yearly Data
+        While startYear <> tempStartDate.Year
+            strSQL = "select rptdept as Deptp, deptdesc as val_desc, deptrate as std_per_lb_rate, "
+            strSQL = strSQL & " tarerate as tareF,"
+            strSQL = strSQL & " sum(rpt_qty) as Quantityp, sum(rpt_weight) as Weightp, sum(rpt_cost) as Costp, "
+            strSQL = strSQL & " sum(rpt_tare_cost) as Tare_Costp "
+            strSQL = strSQL & " from hansen_rpt_table "
+            strSQL = strSQL & " where userid = '" & username & "'"
+            strSQL = strSQL & " and rpt_doc_date >='" & tempStartDate.ToString("MM/dd/yyyy") & " 12:00:00 AM'"
+            strSQL = strSQL & " and rpt_doc_date <= '" & tempEndDate.ToString("MM/dd/yyy") & " 12:00:00 AM'"
+            strSQL = strSQL & " group by rptdept, deptrate, tarerate, deptdesc"
+            strSQL = strSQL & " order by rptdept"
+
+            command.CommandText = strSQL
+            Dim yearReader As SqlDataReader = command.ExecuteReader()
+            While yearReader.Read()
+                Dim dataRow As ReportData
+                dataRow.DateField = tempStartDate.Year.ToString()
+                dataRow.Deptp = yearReader("Deptp")
+                dataRow.Val_desc = yearReader("val_desc")
+                dataRow.Std_per_lb_rate = yearReader("std_per_lb_rate")
+                dataRow.TareF = yearReader("tareF")
+                dataRow.Quantityp = yearReader("Quantityp")
+                dataRow.Weightp = yearReader("Weightp")
+                dataRow.Costp = yearReader("Costp")
+                dataRow.Tare_Costp = yearReader("Tare_Costp")
+                YearlyReport.Add(dataRow)
+            End While
+
+            yearReader.Close()
+            tempEndDate = tempStartDate
+            tempStartDate = tempStartDate.AddYears(-1)
+
+        End While
+
+        strSQL = "select rptdept as Deptp, deptdesc as val_desc, deptrate as std_per_lb_rate, "
+        strSQL = strSQL & " tarerate as tareF,"
+        strSQL = strSQL & " sum(rpt_qty) as Quantityp, sum(rpt_weight) as Weightp, sum(rpt_cost) as Costp, "
+        strSQL = strSQL & " sum(rpt_tare_cost) as Tare_Costp "
+        strSQL = strSQL & " from hansen_rpt_table "
+        strSQL = strSQL & " where userid = '" & username & "'"
+        strSQL = strSQL & " and rpt_doc_date >='" & startDate.Value & " 12:00:00 AM'"
+        strSQL = strSQL & " and rpt_doc_date <= '" & tempEndDate.ToString("MM/dd/yyy") & " 12:00:00 AM'"
+        strSQL = strSQL & " group by rptdept, deptrate, tarerate, deptdesc"
+        strSQL = strSQL & " order by rptdept"
+
+        command.CommandText = strSQL
+        Dim yReader As SqlDataReader = command.ExecuteReader()
+        While yReader.Read()
+            Dim dataRow As ReportData
+            dataRow.DateField = tempStartDate.Year.ToString()
+            dataRow.Deptp = yReader("Deptp")
+            dataRow.Val_desc = yReader("val_desc")
+            dataRow.Std_per_lb_rate = yReader("std_per_lb_rate")
+            dataRow.TareF = yReader("tareF")
+            dataRow.Quantityp = yReader("Quantityp")
+            dataRow.Weightp = yReader("Weightp")
+            dataRow.Costp = yReader("Costp")
+            dataRow.Tare_Costp = yReader("Tare_Costp")
+            YearlyReport.Add(dataRow)
+        End While
+
+        yReader.Close()
+        yearlyData.Value = serializer.Serialize(YearlyReport)
+
+        'Get Monthly Data
+        tempStartDate = New Date(endYear, endMonth, 1)
+        tempEndDate = New Date(endYear, endMonth, endDay)
+
+        While startYear <> tempStartDate.Year And startMonth <> tempStartDate.Month
+            strSQL = "select rptdept as Deptp, deptdesc as val_desc, deptrate as std_per_lb_rate, "
+            strSQL = strSQL & " tarerate as tareF,"
+            strSQL = strSQL & " sum(rpt_qty) as Quantityp, sum(rpt_weight) as Weightp, sum(rpt_cost) as Costp, "
+            strSQL = strSQL & " sum(rpt_tare_cost) as Tare_Costp "
+            strSQL = strSQL & " from hansen_rpt_table "
+            strSQL = strSQL & " where userid = '" & username & "'"
+            strSQL = strSQL & " and rpt_doc_date >='" & tempStartDate.ToString("MM/dd/yyyy") & " 12:00:00 AM'"
+            strSQL = strSQL & " and rpt_doc_date <= '" & tempEndDate.ToString("MM/dd/yyy") & " 12:00:00 AM'"
+            strSQL = strSQL & " group by rptdept, deptrate, tarerate, deptdesc"
+            strSQL = strSQL & " order by rptdept"
+
+            command.CommandText = strSQL
+            Dim monthReader As SqlDataReader = command.ExecuteReader()
+            While monthReader.Read()
+                Dim dataRow As ReportData
+                dataRow.DateField = tempStartDate.ToString("MMM, yyyy")
+                dataRow.Deptp = monthReader("Deptp")
+                dataRow.Val_desc = monthReader("val_desc")
+                dataRow.Std_per_lb_rate = monthReader("std_per_lb_rate")
+                dataRow.TareF = monthReader("tareF")
+                dataRow.Quantityp = monthReader("Quantityp")
+                dataRow.Weightp = monthReader("Weightp")
+                dataRow.Costp = monthReader("Costp")
+                dataRow.Tare_Costp = monthReader("Tare_Costp")
+                MonthlyReport.Add(dataRow)
+            End While
+
+            monthReader.Close()
+            tempEndDate = tempStartDate
+            tempStartDate = tempStartDate.AddMonths(-1)
+        End While
+
+        strSQL = "select rptdept as Deptp, deptdesc as val_desc, deptrate as std_per_lb_rate, "
+        strSQL = strSQL & " tarerate as tareF,"
+        strSQL = strSQL & " sum(rpt_qty) as Quantityp, sum(rpt_weight) as Weightp, sum(rpt_cost) as Costp, "
+        strSQL = strSQL & " sum(rpt_tare_cost) as Tare_Costp "
+        strSQL = strSQL & " from hansen_rpt_table "
+        strSQL = strSQL & " where userid = '" & username & "'"
+        strSQL = strSQL & " and rpt_doc_date >='" & startDate.Value & " 12:00:00 AM'"
+        strSQL = strSQL & " and rpt_doc_date <= '" & tempEndDate.ToString("MM/dd/yyy") & " 12:00:00 AM'"
+        strSQL = strSQL & " group by rptdept, deptrate, tarerate, deptdesc"
+        strSQL = strSQL & " order by rptdept"
+
+        command.CommandText = strSQL
+        Dim mReader As SqlDataReader = command.ExecuteReader()
+        While mReader.Read()
+            Dim dataRow As ReportData
+            dataRow.DateField = tempStartDate.ToString("MMM, yyyy")
+            dataRow.Deptp = mReader("Deptp")
+            dataRow.Val_desc = mReader("val_desc")
+            dataRow.Std_per_lb_rate = mReader("std_per_lb_rate")
+            dataRow.TareF = mReader("tareF")
+            dataRow.Quantityp = mReader("Quantityp")
+            dataRow.Weightp = mReader("Weightp")
+            dataRow.Costp = mReader("Costp")
+            dataRow.Tare_Costp = mReader("Tare_Costp")
+            MonthlyReport.Add(dataRow)
+        End While
+
+        connection.Close()
+    End Sub
+
+End Class

@@ -1,0 +1,157 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="index.aspx.vb" Inherits="PigStyle.Startup" %>
+
+<!DOCTYPE html>
+<%
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Home</title>
+    <link href="CSS/base.css" rel="stylesheet" />
+    <script src="Scripts/angular.js"></script>
+    <script src="Scripts/getEmployees.js"></script>
+    <script src="Scripts/smart-table.js"></script>
+    <style>
+        .st-sort-ascent:before {
+            content: '\25B2';
+        }
+
+        .st-sort-descent:before {
+            content: '\25BC';
+        }
+    </style>
+</head>
+<body ng-app="startApp">
+    <form id="form1" runat="server">
+        <div id="container">
+            <div id="header">
+                <img src="images/webpig.jpg" />
+                <div class="text" style="text-align: center">
+                    <h1>Welcome to the Piggly Wiggly Intranet</h1>
+                    <h2>You are a <%=permissionType%> User</h2>
+                    <h6><a href="http://maps.google.com/maps?q=2215+Union+Avenue,+Sheboygan,+WI&hl=en&sll=44.900771,-89.56949&sspn=11.095005,17.644043&hnear=2215+Union+Ave,+Sheboygan,+Wisconsin+53081&t=m&z=16" target="_blank">2215 Union Ave</a>
+                        * Sheboygan, WI 53081 * (920) 457 - 4433</h6>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="/index.aspx">Home</a>
+            </div>
+            <div id="main">
+                <div id="nav">
+                    <%If permissionType = "Store" Then%>
+                    <a href="Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="Programs/Programs(store)" class="button">Programs</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Store Signage</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Corporate" Then%>
+                    <a href="Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="Programs/Programs.aspx" class="button">Programs</a>
+                    <a href="#" class="button">Meeting Rooms</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Project Info</a>
+                    <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Store Signage</a>
+                    <a href="#" class="button">Help Desk Rpt</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Vendor" Then%>
+                    <a href="Startup.aspx" class="button">Home</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%End If%>
+                </div>
+                <div id="content">
+                    <div class="onerow">
+                        <div class="col4">
+                            <br />
+                        </div>
+                        <div class="col4">
+                            <img src="images/webpig.jpg" />
+                        </div>
+                        <div class="col4">
+                            <br />
+                        </div>
+                    </div>
+                    <div class="onerow">
+                        <div class="col12" style="text-align: center">
+                            <h3>Phone Directory - Enter Information Below</h3>
+                            <br />
+                        </div>
+                    </div>
+                    <div class="onerow">
+                        <div class="col2">
+                            <br />
+                        </div>
+                        <div class="col8" ng-controller="employeeCtrl">
+                            <table st-table="displayedCollection" st-safe-src="employeesCollection" class="table">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:center;" st-sort="firstName" st-skip-natural="true">First Name</th>
+                                        <th style="text-align:center;" st-sort="lastName" st-skip-natural="true">Last Name</th>
+                                        <th style="text-align:center;" st-sort="extension" st-skip-natural="true">Extension</th>
+                                        <th style="text-align:center;" st-sort="city" st-skip-natural="true">Store City</th>
+                                        <th style="text-align:center;" st-sort="store" st-skip-natural="true">Store Number</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input type="text" id="FirstName" size="10" ng-keyup="searchEmp()" /></td>
+                                        <td>
+                                            <input type="text" id="LastName" size="10" ng-keyup="searchEmp()" /></td>
+                                        <td>
+                                            <input type="text" id="Extension" size="10" ng-keyup="searchEmp()" /></td>
+                                        <td>
+                                            <select id="store" ng-model="city" ng-change="searchEmp()">
+                                                <option value=''>Select City</option>
+                                                <% For Each city In cityList%>
+                                                <option value="<%=city%>"><%=city%></option>
+                                                <% Next%>
+                                            </select></td>
+                                        <td>
+                                            <select id="storeNo" ng-model="store" ng-change="searchEmp()">
+                                                <option value=''>Select Store</option>
+                                                <% For Each store In storeList
+                                                        Dim tempStore As String = store.Replace("#", "")
+                                                %>
+                                                <option value="<%=tempStore%>"><%=tempStore%></option>
+                                                <% Next%>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="employee in displayedCollection">
+                                        <td>{{employee.firstName}}</td>
+                                        <td>{{employee.lastName}}</td>
+                                        <td>{{employee.extension}}</td>
+                                        <td><a href="http://maps.google.com/maps?q={{employee.address}}+{{employee.city}}+{{employee.state}}+{{employee.zip}}" target="_blank">
+                                            {{employee.city}}, {{employee.state}}, {{employee.zip}}</a></td>
+                                        <td>{{employee.store}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col2">
+                            </br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="footer">
+                <%= DateTime.Now.ToLongDateString()%>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

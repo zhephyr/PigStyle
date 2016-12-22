@@ -1,0 +1,214 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="InventorySearch.aspx.vb" Inherits="PigStyle.InventorySearch" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>Inventory Search</title>
+    <link href="../../../CSS/bootstrap.min.css" rel="stylesheet" />
+    <link href="../../../CSS/base.css" rel="stylesheet" />
+    <script src="../../../Scripts/angular.js"></script>
+    <script src="../../../Scripts/angular-animate.js"></script>
+    <script src="../../../Scripts/angular-ui/ui-bootstrap-tpls.js"></script>
+    <script src="../../../Scripts/inventory-search.js"></script>
+    <style type="text/css">
+        .menu {
+            width: 100%;
+            border-spacing: 0px;
+            border: #4e95f4 1px solid;
+            border-radius: 5px;
+        }
+
+            .menu td, th {
+                padding: 7px;
+                text-align: center;
+                background: #b8d1f3;
+                background-clip: padding-box;
+            }
+
+            .menu thead tr {
+                -moz-border-radius: 5px;
+                -webkit-border-radius: 5px;
+                border-radius: 5px 5px 0 0;
+            }
+
+            .menu thead th {
+                background: #518de1;
+            }
+
+            .menu thead tr:first-child th:first-child {
+                -moz-border-radius-topleft: 5px;
+                -webkit-border-top-left-radius: 5px;
+                border-top-left-radius: 5px;
+            }
+
+            .menu thead tr:first-child th:last-child {
+                -moz-border-radius-topright: 5px;
+                -webkit-border-top-right-radius: 5px;
+                border-top-right-radius: 5px;
+            }
+
+            .menu tbody tr:last-child td:first-child {
+                -moz-border-radius-bottomleft: 5px;
+                -webkit-border-bottom-left-radius: 5px;
+                border-bottom-left-radius: 5px;
+            }
+
+            .menu tbody tr:last-child td:last-child {
+                -moz-border-radius-bottomright: 5px;
+                -webkit-border-bottom-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+            }
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="container">
+            <div id="header">
+                <img src="../../../images/webpig.jpg" />
+                <div class="text" style="text-align: center">
+                    <h1>Accounting File Request</h1>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="../../../Startup.aspx">Home</a>
+                <a href="../../Programs.aspx">Programs</a>
+                <a href="../../CorpAccProg.aspx">Accounting</a>
+                <a href="InventorySearch.aspx">Inventory Search</a>
+            </div>
+            <div id="main">
+                <div id="nav">
+                    <%If permissionType = "Store" Then%>
+                    <a href="../../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../../Programs(store)" class="button">Programs</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Corporate" Then%>
+                    <a href="../../../Startup.aspx" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="../../Programs.aspx" class="button">Programs</a>
+                    <a href="#" class="button">Meeting Rooms</a>
+                    <a href="#" class="button">Employee Info</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="#" class="button">Project Info</a>
+                    <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                    <a href="#" class="button">Web Links</a>
+                    <a href="#" class="button">Help Desk Rpt</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Vendor" Then%>
+                    <a href="../../../Startup.aspx" class="button">Home</a>
+                    <a href="#" class="button">General Info</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%End If%>
+                </div>
+                <div id="content" ng-app="inventoryApp">
+                    <div class="onerow">
+                        <div class="col2">
+                            <br />
+                        </div>
+                        <div class="col8">
+                            <table class="menu">
+                                <thead>
+                                    <tr>
+                                        <th style="font-size: 1.5em"><b><%=recCount%></b> records. Checked out: <b><%=checkedRecs%></b> records.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-size: 1.25em;"><b>SEARCH BY YEAR</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>To search the entire year, select the year from the listbox below, and optionally combining with more options below.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <table style="width: 100%; border-bottom: solid #4e95f4">
+                                                <tr>
+                                                    <td style="text-align: center;">Year and Items:
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <asp:DropDownList ID="ddlYear" runat="server"></asp:DropDownList>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 1.25em;"><b>DEFINE YOUR SEARCH</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Type in the date range you wish to search
+                                            <br />
+                                            You can type in the new dates and then click on the Submit Search button
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <table style="width: 100%; border-bottom: solid #4e95f4">
+                                                <tr>
+                                                    <td style="text-align: center;">
+                                                        From Date:
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="startDate" datepicker-options="dateOptions" close-text="Close" placeholder="MM/DD/YYYY" />
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default" ng-click="openStart()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                                            </span>
+                                                        </p>
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        To Date:
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="endDate" datepicker-options="dataOptions" close-text="Close" placeholder="MM/DD/YYYY" />
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default" ng-click="openEnd()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                                            </span>
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <br />
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: center; font-size: 1.5em;">
+                                            <asp:Button ID="btnSubmit" runat="server" Text="Submit Search" />
+                                            <br />
+                                            <br />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col2 last">
+                            <br />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="footer">
+                <%= DateTime.Now.ToLongDateString()%>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

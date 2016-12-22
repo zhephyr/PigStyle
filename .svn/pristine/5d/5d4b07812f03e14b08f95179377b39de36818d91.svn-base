@@ -1,0 +1,66 @@
+﻿angular.module('plumApp', ['ngAnimate', 'ui.bootstrap']);
+
+angular.module('plumApp').controller('pluModalCtrl', function ($scope, $uibModal) {
+
+    $scope.productData = {};
+
+    $scope.loadData = function () {
+        $scope.productData = JSON.parse(document.getElementById('nutritionData').value);
+
+        if ($scope.productData != null) {
+            $scope.pluValid = true;
+        };
+
+        if ($scope.productData.ServSize != null) {
+            $scope.areFacts = true;
+        };
+
+        var pluInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'PLU-Data.html',
+            controller: 'pluInstanceCtrl',
+            size: 'lg',
+            resolve: {
+                productData: function () {
+                    return $scope.productData;
+                }
+            }
+        });
+    };
+});
+
+angular.module('plumApp').controller('pluInstanceCtrl', function ($scope, $uibModalInstance, productData) {
+    $scope.productData = productData;
+
+    if ($scope.productData != null) {
+        $scope.pluValid = true;
+    };
+
+    if ($scope.productData.ServSize != null) {
+        $scope.areFacts = true;
+    };
+
+    $scope.close = function () {
+        $uibModalInstance.close();
+    };
+
+    $scope.print = function () {
+        $scope.printElement(document.getElementById('modalHeader'));
+        $scope.printElement(document.getElementById('modalBody'));
+        window.print();
+    };
+
+    $scope.printElement = function (elem) {
+        var domClone = elem.cloneNode(true);
+
+        var $printSection = document.getElementById('printSection');
+
+        if (!$printSection) {
+            var $printSection = document.createElement('div');
+            $printSection.id = 'printSection';
+            document.body.appendChild($printSection);
+        }
+
+        $printSection.appendChild(domClone);
+    };
+});

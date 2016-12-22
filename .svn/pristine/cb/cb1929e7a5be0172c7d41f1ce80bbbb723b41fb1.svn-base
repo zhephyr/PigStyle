@@ -1,0 +1,15 @@
+﻿angular.module('hansenApp', ['ngAnimate', 'ui.bootstrap']);
+angular.module('hansenApp').controller('DatepickerCtrl', function ($scope) {
+    $scope.status = {
+        startOpened: false,
+        endOpened: false,
+    };
+
+    $scope.openStart = function ($event) {
+        $scope.status.startOpened = true;
+    };
+
+    $scope.openEnd = function ($event) {
+        $scope.status.endOpened = true;
+    };
+});

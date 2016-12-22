@@ -1,0 +1,82 @@
+<% @Page Language="VB" Explicit="True" %>
+<!--#include virtual ="/web_extras/Includes/DBConn.asp"-->
+<%
+Dim objRS
+Dim strSQL
+Dim tmpStore
+
+objConn.Open
+set objRS = Server.CreateObject("ADODB.Recordset")
+%>
+<html>
+	<head>
+        <title>Piggly Wiggly Midwest</title>        
+		<script type="text/javascript" src="getemployee.js"></script>
+        <link rel="stylesheet" type="text/css" href="Web_Extras/Style.css" />		
+	</head>
+	<body Class="PageText" onload='document.myForm.LastName.focus()' style="text-align:center">
+		<form name='myForm'>
+			<div Class="PageTitle">Piggly Wiggly Midwest Intranet</div>
+			<br />
+			<div>
+				<a href="http://maps.google.com/maps?q=2215+Union+Avenue,+Sheboygan,+WI&hl=en&sll=44.900771,-89.56949&sspn=11.095005,17.644043&hnear=2215+Union+Ave,+Sheboygan,+Wisconsin+53081&t=m&z=16" target="_blank">
+					2215 Union Ave
+				</a> 
+				* Sheboygan, WI 53081 * (920) 457 - 4433
+			</div>
+			<br />
+			<img src="web_extras/images/WebPig.jpg" alt="WebPig" />
+			<br />
+			<br />
+			<div>Phone Directory - Enter Information Below</div> 
+        	<table border="0" cellpadding="0" cellspacing="0" width="500px"> 
+				<tr>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Extension</th>
+					<th>Select City</th>
+					<th>Select Store</th>
+				</tr>
+				<tr>
+					<td><input type="text" id="FirstName" size="10" onkeyup="searchEmp(this.value,2)" /></td>
+					<td><input type="text" id="LastName" size="10" onkeyup="searchEmp(this.value,1)" /></td>
+					<td><input type="text" id="Extension" size="5" onkeyup="searchEmp(this.value,3)" /></td>
+					<td>                  
+						<select name="store" onchange="searchEmp(this.options[this.selectedIndex].value,5)">						
+							<option value=''>Select City</option>
+<%
+	strSQL = "SELECT distinct(city) FROM ph_store ORDER BY city"
+	Set objRS = objConn.Execute(strSQL)
+	
+	DO UNTIL objRS.EOF 		
+%>					
+							<option value='<%=trim(objRS("city"))%>'><%=trim(objRS("city"))%></option>
+<%
+		objRS.MoveNext
+	LOOP
+%>
+						</select>
+					</td>
+					<td>
+						<select name="storeNo" onchange="searchEmp(this.options[this.selectedIndex].value,6)">
+							<option value=''>Select Store</option>
+<%
+	strSQL = "SELECT distinct(storenum) as store FROM ph_store ORDER BY 1"
+	Set objRS = objConn.Execute(strSQL)
+                        
+	DO UNTIL objRS.EOF 
+		tmpStore = trim(replace(objRS("store"),"#",""))
+%>		
+							<option value='<%=tmpStore%>'><%=tmpStore%></option>
+<%							
+		objRS.MoveNext
+	LOOP
+%>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</form>
+		<div id="txtHint"><%= FormatDateTime(Date(),1)%></div>		
+	</body>
+</html>

@@ -1,0 +1,209 @@
+<% @Page Language="VB" Explicit="True" %>
+
+<%
+    Dim strUserName             'The UserName of the person logged in
+    Dim adsUser                 'WinNT object to get the group lists
+    Dim GrpList                 'The Group List
+    Dim PermissionType          'The type of permissions (Corporate, Store, or Vendor)
+    Dim group                   'The variable to go through each of the groups that user belongs to
+    Dim showHelp                'for showing the Help Desk option or not
+    
+    showHelp = False            'default to not showing
+    
+    'To get the user and all of the groups he or she belongs to
+    strUserName=Replace(ucase(Request.ServerVariables("LOGON_USER")) , "\", "/")
+
+    adsUser = GetObject("WinNT://" & strUserName)
+
+    'To concatinate these groups together
+    For each group in adsUser.groups
+        GrpList = GrpList & ucase(trim(group.name)) & ";"
+    next
+
+    'Figure out permission types
+    if(instr(1,GrpList,"DG-DSI-PREFERED CARD USER")) then
+        response.redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    elseif (instr(1, GrpList, "CORPORATE USERS")) then
+        PermissionType = "Corporate"
+    elseif (instr(1, GrpList, "FRESH IDEAS USERS")) then
+        PermissionType = "Corporate"
+    elseif (instr(1, GrpList, "STORE USERS")) then
+        PermissionType = "Store"
+    elseif (instr(1, GrpList, "DOMAIN USERS")) then
+        PermissionType = "Vendor"
+    End if
+    'if(instr(1,GrpList,"DG-BSSG")) then
+    '  PermissionType = "Store"
+    'end if
+    if(instr(1,GrpList,"DG-BSSG")) then
+        'DISTRICT MANAGERS        
+        'DG-BSSG* whatever after
+        showHelp = 1
+    end if    
+    
+%>
+<html>
+    <head>
+        <title>Piggly Wiggly Midwest</title>
+        <link rel="stylesheet" type="text/css" href="Web_Extras/Style.css" />
+    </head>
+    <body Class="MenuText" leftmargin="0"  topmargin="0" marginheight="0" onmouseover="window.status='Welcome to the Piggly Wiggly Midwest Intranet...';return true;">    
+        <table Class="MenuText" width="100%" cellspacing="0" cellpadding="0" border="0" height="100%">
+            <tr>
+                <td valign="top" >
+                    <div>&nbsp</div>
+                    <table Class="MenuText" width="110" border="0" cellspacing="0" cellpadding="0" valign="top" >
+<%
+'Menu System For the Store Users
+if(PermissionType = "Store") then 
+%>
+                            <tr>
+                                <td>
+                                    <a href="beginpage.asp" target="_parent" Class="MenuOptions">Home</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="http://vg-fortis/FortisWeb" target="_parent" Class="MenuOptions">Fortis</a>
+                                </td>
+                            </tr>                            
+                            <tr>
+                                <td>
+                                    <a href="Programs/Programs(store).htm" target="ContentFrame" Class="MenuOptions">Programs</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="information/information(store).htm" target="ContentFrame" Class="MenuOptions">General Info</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="web_extras/web_security/browsing.asp?Path=D:/web/information/forms/Employee Info and Forms/" target="ContentFrame" Class="MenuOptions">Employee Info</a>
+                                </td>
+                            </tr>                            
+                            <tr>
+                                <td>
+                                    <a href="Web_Links/Links.htm" target="ContentFrame" Class="MenuOptions">Web Links</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    &nbsp
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="http://www.shopthepig.com" target="_parent" Class="MenuOptions">Piggly Wiggly</a>
+                                </td>
+                            </tr>
+<%
+'Menu For the Normal Corporate User
+elseif(PermissionType = "Corporate") then
+%>
+                            <tr>
+                                <td>
+                                    <a href="beginpage.asp" target="_parent" Class="MenuOptions">Home</a>
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="http://vg-fortis/FortisWeb" target="_parent" Class="MenuOptions">Fortis</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="Programs/Programs.asp" target="ContentFrame" Class="MenuOptions">Programs</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="production/calendar/caleditor.asp" target="ContentFrame"  Class="MenuOptions">Meeting Rooms</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="web_extras/web_security/browsing.asp?Path=D:/web/information/forms/Employee Info and Forms/" target="ContentFrame" Class="MenuOptions">Employee Info</a>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <a href="information/information.htm" target="ContentFrame" Class="MenuOptions">General Info</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                     <a href="web_extras/web_security/browsing.asp?path=D:/web/Project%20Websites/RSP%20Web/Meeting%20Notes/" target="ContentFrame" Class="MenuOptions">Projects Info</a>
+                                </td>
+                            </tr>                            
+                            <tr>
+                                <td>
+                                    <a href="http://vg-techsrv.sso.com/" target="_parent" Class="MenuOptions">BSSG Website</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="Web_Links/Links.htm" target="ContentFrame" Class="MenuOptions">Web Links</a>
+                                </td>
+                            </tr>
+<%
+if(showHelp)then 
+%>
+							<tr>
+							    <td>
+							        <a href="production/magic3/helpdesk.asp" target="_parent" Class="MenuOptions">Help Desk Rpt</a>
+							    </td>
+							</tr>
+<%
+end if
+%>
+                            <tr>
+                                <td>
+                                    &nbsp
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="http://www.shopthepig.com" target="_parent" Class="MenuOptions">Piggly Wiggly</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    &nbsp
+                                </td>
+                            </tr>
+<%
+'Menu For the Vendors
+elseif(PermissionType = "Vendor") then
+%>
+                            <tr>
+                                <td>
+                                    <a href="beginpage.asp" target="_parent" Class="MenuOptions">Home</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="information/information(vendor).htm" target="ContentFrame" Class="MenuOptions">General Info</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    &nbsp
+                                </td>
+                            </tr>                            
+                            <tr>
+                                <td>
+                                    <a href="http://www.shopthepig.com" target="_parent" Class="MenuOptions">Shopthepig.com</a>
+                                </td>
+                            </tr>                            
+<%
+end if
+%>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

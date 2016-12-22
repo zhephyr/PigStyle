@@ -1,0 +1,257 @@
+﻿angular.module('accInvApp', ['ngAnimate', 'ui.bootstrap', 'darthwade.loading']);
+
+angular.module('accInvApp').controller('accInvCtrl', function ($scope, $uibModal, $http, $loading) {
+    $scope.today = function () {
+        $scope.startDate = new Date();
+        $scope.endDate = new Date();
+    };
+    $scope.today();
+
+    $scope.pageOptions = {
+        areBoxes: false,
+        areStores: false,
+        isSelection: false,
+    };
+
+    $scope.popStart = {
+        opened: false,
+    };
+
+    $scope.popEnd = {
+        opened: false,
+    };
+
+    $scope.openStart = function () {
+        $scope.popStart.opened = true;
+    };
+
+    $scope.openEnd = function () {
+        $scope.popEnd.opened = true;
+    };
+
+    $scope.selection = {
+        year: null,
+        boxType: null,
+        storeNo: null,
+    };
+
+    $http.post('InventorySearch.aspx/PopulateYearList', { responseType: 'json' }).
+    then(function (response) {
+        $scope.yearList = JSON.parse(response.data.d);
+    });
+
+    $scope.selectYear = function () {
+        $scope.startDate = new Date($scope.selection.year, 0, 1);
+        $scope.endDate = new Date($scope.selection.year, 11, 31);
+        $loading.start('pallets');
+        $scope.submitDates();
+    };
+
+    $scope.submitDates = function () {
+        $loading.start('pallets');
+        $http.post('InventorySearch.aspx/GetBoxTypes', angular.toJson({ startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.boxTypes = JSON.parse(response.data.d);
+            $scope.pageOptions.isSelection = true;
+
+            if ($scope.boxTypes.length != 0) {
+                $scope.pageOptions.areBoxes = true;
+            }
+
+            $scope.getPalletNo();
+        });
+    };
+
+    $scope.submitType = function () {
+        $loading.start('pallets');
+        $http.post('InventorySearch.aspx/GetStoreNo', angular.toJson({ boxType: $scope.selection.boxType, startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.storeNums = JSON.parse(response.data.d);
+
+            if ($scope.storeNums.length != 0) {
+                $scope.pageOptions.areStores = true;
+            }
+
+            $scope.getPalletNo();
+        });
+    };
+
+    $scope.getPalletNo = function () {
+        $http.post('InventorySearch.aspx/GetPalletNo', angular.toJson({ storeNo: $scope.selection.storeNo, boxType: $scope.selection.boxType, startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.palletNo = response.data.d;
+
+            $loading.finish('pallets');
+        });
+    };
+
+    $scope.resetPage = function () {
+        $scope.selection.year = "";
+        $scope.startDate = new Date();
+        $scope.endDate = new Date();
+        $scope.selection.boxType = "";
+        $scope.selection.storeNo = "";
+        $scope.pageOptions.isSelection = false;
+        $scope.pageOptions.areBoxes = false;
+        $scope.pageOptions.areStores = false;
+    };
+
+    $scope.submitSearch = function () {
+        $loading.start('pallets');
+
+        $http.post('InventorySearch.aspx/GetPalletData', angular.toJson({ storeNo: $scope.selection.storeNo, boxType: $scope.selection.boxType, startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.modalInfo = JSON.parse(response.data.d);
+
+            var modalInstance = $uibModal.open({
+                animation: true,
+                templateUrl: 'accounting-file-pallet-modal.html',
+                controller: 'accInvModalInstanceCtrl',
+                size: 'lg',
+                resolve: {
+                    modalInfo: function () {
+                        return $scope.modalInfo;
+                    }
+                }
+            });
+
+            modalInstance.rendered.then(function () {
+                $('.modal-body img').zoomify({ scale: .95 });
+                $loading.finish('pallets');
+            });
+        });
+    };
+});
+
+angular.module('accInvApp').controller('accInvModalInstanceCtrl', function ($scope, $uibModalInstance, $uibModal, modalInfo) {
+    $scope.modalInfo = modalInfo;
+    $scope.totalPages = $scope.modalInfo.length;
+    $scope.currentPage = 1;
+    $scope.palletInfo = $scope.modalInfo[$scope.currentPage - 1];
+
+    $uibModalInstance.rendered.then(function () {
+        if ($scope.palletInfo.boxF01.outDate != null)
+            document.getElementById("F01").className = "box-out";
+        if ($scope.palletInfo.boxF02.outDate != null)
+            document.getElementById("F02").className = "box-out";
+        if ($scope.palletInfo.boxF03.outDate != null)
+            document.getElementById("F03").className = "box-out";
+        if ($scope.palletInfo.boxF04.outDate != null)
+            document.getElementById("F04").className = "box-out";
+        if ($scope.palletInfo.boxF05.outDate != null)
+            document.getElementById("F05").className = "box-out";
+        if ($scope.palletInfo.boxF06.outDate != null)
+            document.getElementById("F06").className = "box-out";
+        if ($scope.palletInfo.boxF07.outDate != null)
+            document.getElementById("F07").className = "box-out";
+        if ($scope.palletInfo.boxF08.outDate != null)
+            document.getElementById("F08").className = "box-out";
+        if ($scope.palletInfo.boxF09.outDate != null)
+            document.getElementById("F09").className = "box-out";
+        if ($scope.palletInfo.boxF10.outDate != null)
+            document.getElementById("F10").className = "box-out";
+        if ($scope.palletInfo.boxF11.outDate != null)
+            document.getElementById("F11").className = "box-out";
+        if ($scope.palletInfo.boxF12.outDate != null)
+            document.getElementById("F12").className = "box-out";
+
+        if ($scope.palletInfo.boxB01.outDate != null)
+            document.getElementById("B01").className = "box-out";
+        if ($scope.palletInfo.boxB02.outDate != null)
+            document.getElementById("B02").className = "box-out";
+        if ($scope.palletInfo.boxB03.outDate != null)
+            document.getElementById("B03").className = "box-out";
+        if ($scope.palletInfo.boxB04.outDate != null)
+            document.getElementById("B04").className = "box-out";
+        if ($scope.palletInfo.boxB05.outDate != null)
+            document.getElementById("B05").className = "box-out";
+        if ($scope.palletInfo.boxB06.outDate != null)
+            document.getElementById("B06").className = "box-out";
+        if ($scope.palletInfo.boxB07.outDate != null)
+            document.getElementById("B07").className = "box-out";
+        if ($scope.palletInfo.boxB08.outDate != null)
+            document.getElementById("B08").className = "box-out";
+        if ($scope.palletInfo.boxB09.outDate != null)
+            document.getElementById("B09").className = "box-out";
+        if ($scope.palletInfo.boxB10.outDate != null)
+            document.getElementById("B10").className = "box-out";
+        if ($scope.palletInfo.boxB11.outDate != null)
+            document.getElementById("B11").className = "box-out";
+        if ($scope.palletInfo.boxB12.outDate != null)
+            document.getElementById("B12").className = "box-out";
+    });
+
+    $scope.checkSelection = function (location, boxInfo) {
+        $scope.selectedInfo = {
+            location: location,
+            boxInfo: boxInfo,
+        }
+
+        var submodalInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'selected-file-modal.html',
+            controller: 'selectedModalCtrl',
+            resolve: {
+                selectedInfo: function () {
+                    return $scope.selectedInfo;
+                }
+            }
+        });
+
+        submodalInstance.result.then(function (selectedInfo) {
+            $scope.selectedBox = selectedInfo;
+
+            submodalInstance.result.then(function (selectedBox) {
+                var confirmationModalInstance = $uibModal.open({
+                    animation: true,
+                    templateUrl: 'confirmation-modal.html',
+                    controller: 'confirmationModalCtrl',
+                    resolve: {
+                        selectedBox: function () {
+                            return $scope.selectedBox;
+                        }
+                    }
+                });
+            });
+        });
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+});
+
+angular.module('accInvApp').controller('selectedModalCtrl', function ($scope, $uibModalInstance, $http, $loading, selectedInfo) {
+    $scope.selectedInfo = selectedInfo;
+
+    $scope.submitSelection = function () {
+        $loading.start('pallets');
+
+        $http.post('InventorySearch.aspx/SubmitSelection', angular.toJson({ boxID: $scope.selectedInfo.boxInfo.boxID })).
+        then(function (response) {
+            if (response.data.d != false) {
+                var otherInfo = JSON.parse(response.data.d)
+                $scope.selectedInfo["name"] = otherInfo[0];
+                $scope.selectedInfo["checkedDate"] = otherInfo[1];
+
+                $uibModalInstance.close($scope.selectedInfo);
+            }
+            else
+                $uibModalInstance.close(false);
+        });
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+});
+
+angular.module('accInvApp').controller('confirmationModalCtrl', function ($scope, $uibModalInstance, $loading, selectedBox) {
+    $loading.finish('pallets');
+
+    $scope.selectedBox = selectedBox;
+
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    }
+});

@@ -1,0 +1,39 @@
+﻿<div class="modal-header">
+    <button class="close pull-right" type="button" ng-click="close()"><span class="glyphicon glyphicon-remove"></span></button>
+    <h2 class="modal-title" style="color: #0000CD;">Late Transmissions (01/01/2016 - 06/03/2016)</h2>
+</div>
+<div class="modal-body">
+    <h4 style="padding-left: 2em; color: #8B0000;">{{lateTrans.manager}} - Store #{{lateTrans.storeNo}}<span style="float: right; padding-right: 2em;">{{lateTrans.city}}</span></h4>
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Dept</th>
+                <th>Scheduled Time</th>
+                <th>Process Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="trans in lateTrans">
+                <td>{{trans.weekday}}</td>
+                <td>{{lateTrans.transInfo.dept}}</td>
+                <td>{{trans.schedTime}}</td>
+                <td>{{trans.proTime}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="totals" class="onerow">
+        <div class="col4" style="text-align: left;">
+            {{lateTrans.transInfo.numTrans}} Records
+        </div>
+        <div class="col4" style="text-align: center;">
+            {{lateTrans.transInfo.numLate}} Processed Late
+        </div>
+        <div class="col4 last" style="text-align: right;">
+            {{lateTrans.transInfo.perOnTime * 100 | number : 0}}%
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="close()">Close</button>
+</div>

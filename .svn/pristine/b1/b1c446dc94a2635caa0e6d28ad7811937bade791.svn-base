@@ -1,0 +1,50 @@
+<% @Page Language="VB" Explicit="True" %>
+
+<%
+'   beginpage.asp
+'   This should replace the beginpage.asp which does not have the phone search frame
+'   This program uses AJAX which in turn it calls the followings:
+'   1. menu.asp = the left frame -- the menu on the left
+'   2. employee.asp = the right frame -- where people can search employee info
+'
+'   Written by: Jay Xiong
+'               October 20, 2009
+'--------------------------------------------------------------------------------------------
+
+	Dim strUserName
+	Dim adsUser
+	Dim group
+	Dim GrpList
+
+	strUserName=Replace(ucase(Request.ServerVariables("LOGON_USER")) , "\", "/")
+	Set adsUser = getobject("WinNT://" & strUserName)
+
+	'To concatinate these groups together
+	For each group in adsUser.groups
+		GrpList = GrpList & ucase(trim(group.name)) & ";"
+	next
+
+	'Figure out permission types
+	if(instr(1,GrpList,"DG-DSI-PREFERED CARD USER")) then
+		response.redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+	end if
+%>
+<html>
+	<head>
+		<title>
+			Piggly Wiggly Midwest LLC 
+		</title>
+	</head>
+	<frameset cols="111,100%" border="0">
+	<frame src="menu.asp" name="MenuFrame" noResize scrolling="no" />
+    <frame src="frame.asp" name="ContentFrame" noResize scrolling="yes" />
+    <!--
+    <frame Class="FrameTitle" src="frame.htm" name="ContentFrame" noResize scrolling="yes" />
+    -->
+        <NOFRAMES>
+             <body>
+                  <p>This page uses frames, but your browser doesn't support them.</p>
+             </body>
+        </NOFRAMES>
+	</frameset>    
+</html>

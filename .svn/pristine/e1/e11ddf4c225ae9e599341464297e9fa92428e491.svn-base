@@ -1,0 +1,61 @@
+<%
+    Dim objConn
+    objConn = Server.CreateObject("ADODB.Connection")
+    objConn.ConnectionString = "DSN=UnitedDB; UID=freshuser; PWD=Fresh2012;"
+
+    Dim objConnGift
+    objConnGift = Server.CreateObject("ADODB.Connection")
+    objConnGift.ConnectionString = "DSN=Giftcard; UID=giftuser; PWD=2012Gift;"
+
+    Dim objConnTCI
+    objConnTCI = Server.CreateObject("ADODB.Connection")
+    objConnTCI.ConnectionString = "DSN=tcihqdbprod; UID=sa; PWD=2005Sql;"
+
+    Dim objConnTCITEST
+    objConnTCITEST = Server.CreateObject("ADODB.Connection")
+    objConnTCITEST.ConnectionString = "DSN=tcihqdbtest; UID=sa; PWD=2005Sql;"
+
+    Dim objConnHelp
+    objConnHelp = Server.CreateObject("ADODB.Connection")
+    objConnHelp.ConnectionString = "DSN=Helpdesk; UID=administrator; PWD=Helpmore01;"
+
+    Dim objConnPlum
+    objConnPlum = Server.CreateObject("ADODB.Connection")
+    objConnPlum.ConnectionString = "DSN=Plum; UID=plum; PWD=plum;"
+
+    Dim objConnFresh
+    objConnFresh = Server.CreateObject("ADODB.Connection")
+    objConnFresh.ConnectionString = "DSN=freshdb; UID=informix; PWD=in4mix;"
+
+    Dim objConnDm2
+    objConnDm2 = Server.CreateObject("ADODB.Connection")
+    objConnDm2.ConnectionString = "DSN=dm2; UID=informix; PWD=dm23;"
+
+    Dim objConnIM
+    objConnIM = Server.CreateObject("ADODB.Connection")
+    objConnIM.ConnectionString = "DSN=InternetMarketing; UID=imuser; PWD=Im2012;"
+
+    Dim objConnLMS
+    objConnLMS = Server.CreateObject("ADODB.Connection")
+    objConnLMS.ConnectionString = "DSN=linuxmysqldsd; UID=pigprod1; PWD=pigprod1;"
+
+    Dim objConnDBWH
+    objConnDBWH = Server.CreateObject("ADODB.Connection")
+    objConnDBWH.ConnectionString = "DSN=dbwhprod; UID=sa; PWD=2006Sql;"
+
+    Dim objConnHG
+    objConnHG = Server.CreateObject("ADODB.Connection")
+    objConnHG.ConnectionString = "DSN=HostGator; UID=shop; PWD=PigGator2215;"
+
+    Dim objConnHGGift
+    objConnHGGift = Server.CreateObject("ADODB.Connection")
+    objConnHGGift.ConnectionString = "DSN=HostGator - Gift; UID=shop; PWD=PigGator2215;"
+
+    Dim objConnStore
+    objConnStore = Server.CreateObject("ADODB.Connection")
+    objConnStore.ConnectionString = "DSN=UnitedDB - Store; UID=sa; PWD=2011Sql;"
+
+    Dim objConnSurvey
+    objConnSurvey = Server.CreateObject("ADODB.Connection")
+    objConnSurvey.ConnectionString = "DSN=survey; UID=surveyuser; PWD=surveyuser2013;"
+%>

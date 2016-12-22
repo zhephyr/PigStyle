@@ -1,0 +1,192 @@
+﻿Imports System.Windows.Forms
+Imports System.DirectoryServices
+Imports System.Data.SqlClient
+
+Public Class CustomerServiceReportTotals
+    Inherits System.Web.UI.Page
+
+    Protected dirGroups As List(Of String)
+    Protected permissionType As String
+
+    Shared connectionStr As String = "Server=VG-UNITEDDB; Database=freshdb; User Id=freshuser; Password=Fresh2012;"
+
+    Protected storeOptions As List(Of String)
+    Protected areaOptions As List(Of String)
+
+    Structure StoreInfo
+        Dim storeNo As String
+        Dim city As String
+        Dim manager As String
+        Dim transmissions As List(Of Transmission)
+        Dim deliveries As List(Of Delivery)
+        Dim custAddOns As List(Of AddOn)
+    End Structure
+
+    Structure Transmission
+        Dim deptNo As String
+        Dim dept As String
+        Dim numTrans As Integer
+        Dim numLate As Integer
+        Dim perOnTime As Double
+    End Structure
+
+    Structure Delivery
+        Dim desc As String
+        Dim numDeliveries As Integer
+        Dim ttlCases As Integer
+        Dim avgCases As Integer
+    End Structure
+
+    Structure AddOn
+        Dim deptNo As String
+        Dim dept As String
+        Dim numCalls As Integer
+        Dim ttlCases As Integer
+    End Structure
+
+    Structure LateTrans
+        Dim weekday As String
+        Dim schedTime As String
+        Dim proTime As String
+    End Structure
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        'Dim username As String = "pfox"
+        Dim username As String = Split(HttpContext.Current.User.Identity.Name, "\")(1)
+        dirGroups = GetGroups("LDAP://pwmdc4/DC=sso,DC=fb,DC=com", username)
+
+        If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+            Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+        End If
+
+        If dirGroups.Contains("Corporate Users") Then
+            permissionType = "Corporate"
+        ElseIf dirGroups.Contains("Store Users") Then
+            permissionType = "Store"
+        ElseIf dirGroups.Contains("Domain Users") Then
+            permissionType = "Vendor"
+        End If
+
+        Dim cs As ClientScriptManager = Page.ClientScript
+        Dim csName As String = "showNoPermissionMsg"
+        Dim csScript As New StringBuilder()
+        csScript.Append("<script type=""text/javascript"">")
+        csScript.Append("alert('Invalid Group for " & Split(HttpContext.Current.User.Identity.Name, "\")(1) & ".  For access, please contact the Help Desk at Ext. 4357.');")
+        csScript.Append("window.location = '/Programs/Programs.aspx';")
+        csScript.Append("</script>")
+
+        If Not dirGroups.Contains("Corporate Users") And Not dirGroups.Contains("Store Users") Then
+            If Not cs.IsClientScriptBlockRegistered(Me.[GetType](), "showNoPermissionMsg") Then
+                cs.RegisterClientScriptBlock(Me.[GetType](), csName, csScript.ToString())
+            End If
+        End If
+
+        GetStoreOptions(permissionType, dirGroups)
+        GetAreaOptions(permissionType)
+    End Sub
+
+    Private Function GetGroups(ByVal _path As String, ByVal username As String) As List(Of String)
+        Dim Groups As New List(Of String)
+        Dim dirEntry As New System.DirectoryServices.DirectoryEntry(_path)
+        Dim dirSearcher As New DirectorySearcher(dirEntry)
+        dirSearcher.Filter = "(&(objectcategory=user)(SAMAccountName=" & username & "))"
+        dirSearcher.PropertiesToLoad.Add("memberOf")
+        Dim propCount As Integer
+        Try
+            Dim dirSearchResults As SearchResult = dirSearcher.FindOne()
+            propCount = dirSearchResults.Properties("memberOf").Count
+            Dim dn As String
+            Dim equalsIndex As String
+            Dim commaIndex As String
+            For i As Integer = 0 To propCount - 1
+                dn = dirSearchResults.Properties("memberOf")(i)
+                equalsIndex = dn.IndexOf("=", 1)
+                commaIndex = dn.IndexOf(",", 1)
+                If equalsIndex = -1 Then
+                    Return Nothing
+                End If
+                If Not Groups.Contains(dn.Substring((equalsIndex + 1), _
+    (commaIndex - equalsIndex) - 1)) Then
+                    Groups.Add(dn.Substring((equalsIndex + 1), (commaIndex - equalsIndex) - 1))
+                End If
+            Next
+        Catch ex As Exception
+            If ex.GetType Is GetType(System.NullReferenceException) Then
+                MessageBox.Show("Selected user isn't a member of any groups at this time.", "No groups listed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Else
+                MessageBox.Show(ex.Message.ToString, "Search Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        End Try
+        Return Groups
+    End Function
+
+    Private Sub GetStoreOptions(ByVal permissionType As String, ByRef groups As List(Of String))
+        storeOptions = New List(Of String)
+
+        Dim connection As SqlConnection = New SqlConnection(connectionStr)
+
+        connection.Open()
+
+        If permissionType = "Store" Then
+            For Each group In groups
+                If group.StartsWith("store ") Then
+                    storeOptions.Add(group.Substring(6, 3))
+                End If
+            Next
+            storeOptions.Sort()
+
+        ElseIf permissionType = "Corporate" Then
+
+            Dim sqlStr As String = "SELECT storenum FROM csrstrlst WHERE activestore = 'Y' ORDER BY storenum;"
+            Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+            Dim reader As SqlDataReader = cmd.ExecuteReader()
+            Dim storeNum As Integer
+
+            While reader.Read()
+                storeNum = reader("storenum")
+                storeOptions.Add(storeNum.ToString("D3"))
+            End While
+            reader.Close()
+
+        End If
+
+        connection.Close()
+    End Sub
+
+    Private Sub GetAreaOptions(ByVal permissionType As String)
+        areaOptions = New List(Of String)
+
+        If permissionType = "Corporate" Then
+            Dim connection As SqlConnection = New SqlConnection(connectionStr)
+
+            connection.Open()
+
+            Dim sqlStr As String = "SELECT mgrname FROM csrdmgr ORDER BY mgrname"
+            Dim cmd As SqlCommand = New SqlCommand(sqlStr, connection)
+            Dim reader As SqlDataReader = cmd.ExecuteReader()
+
+            While reader.Read()
+                areaOptions.Add(reader("mgrname"))
+            End While
+            reader.Close()
+
+            connection.Close()
+        End If
+    End Sub
+
+    <System.Web.Services.WebMethod()>
+    Public Shared Function GetPeriodData(ByVal fromDate As Date, ByVal toDate As Date, ByVal selectedOptions As String) As StoreInfo
+        Dim connection As SqlConnection = New SqlConnection(connectionStr)
+
+        Dim sqlStr As String
+        Dim cmd As SqlCommand
+        Dim reader As SqlDataReader
+
+        Dim periodInfo As StoreInfo = New StoreInfo()
+
+
+
+        Return periodInfo
+
+    End Function
+End Class

@@ -1,0 +1,258 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="plu.aspx.vb" Inherits="PigStyle.plu" %>
+
+<%
+    If dirGroups.Contains("DG-DSI-PREFERED CARD USER") Then
+        Response.Redirect("http://" & Request.ServerVariables("SERVER_NAME") & "/production/dci/lookupcard.asp")
+    End If
+    If dirGroups.Contains("Corporate Users") Then
+        permissionType = "Corporate"
+    ElseIf dirGroups.Contains("Store Users") Then
+        permissionType = "Store"
+    ElseIf dirGroups.Contains("Domain Users") Then
+        permissionType = "Vendor"
+    End If
+%>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>PLU Search</title>
+    <script src="../../Scripts/angular.js"></script>
+    <script src="../../Scripts/angular-animate.js"></script>
+    <script src="../../Scripts/angular-ui/ui-bootstrap-tpls.js"></script>
+    <script src="../../Scripts/plum.js"></script>
+    <link href="../../CSS/bootstrap.css" rel="stylesheet" />
+    <link href="../../CSS/base.css" rel="stylesheet" />
+    <style type="text/css">
+        .modal-body {
+            overflow: auto;
+        }
+
+        #nutritionfacts {
+            border: 1px solid black;
+            padding: 3px;
+            font-family: 'Arial Black',sans-serif;
+        }
+
+            #nutritionfacts .label {
+                font-size: 100%;
+                padding: 0;
+            }
+
+            #nutritionfacts td.indent {
+                font-size: 85%;
+                text-indent: 25px;
+            }
+
+            #nutritionfacts td {
+                color: black;
+                font-family: Arial,sans-serif;
+                font-size: 12pt;
+                padding: 0;
+            }
+
+                #nutritionfacts td.header {
+                    font-family: 'Arial Black',sans-serif;
+                    font-size: 36px;
+                    white-space: nowrap;
+                }
+
+            #nutritionfacts div.label {
+                color: #000000;
+                float: left;
+                font-family: 'Arial Black',sans-serif;
+            }
+
+            #nutritionfacts div.weight {
+                display: inline;
+                font-family: Arial,Helvetica,sans-serif;
+                padding-left: 1px;
+            }
+
+            #nutritionfacts div.dv {
+                display: inline;
+                float: right;
+                font-family: 'Arial Black',sans-serif;
+            }
+
+            #nutritionfacts table.vitamins td {
+                font-family: Arial,sans-serif;
+                white-space: nowrap;
+                width: 20%;
+            }
+
+            #nutritionfacts div.line {
+                font-family: Arial;
+                border-top: 1px solid black;
+            }
+
+            #nutritionfacts div.labellight {
+                float: left;
+                font-family: Arial,sans-serif;
+            }
+
+            #nutritionfacts .highlighted {
+                border: 1px dotted grey;
+                padding: 2px;
+            }
+
+        @media screen {
+            #printSection {
+                display: none;
+            }
+        }
+
+        @media print {
+            html * {
+                visibility: hidden;
+            }
+
+            .label {
+                border: none;
+            }
+
+            body > :not(#printSection) {
+                display: none;
+            }
+
+            #printSection, #printSection * {
+                visibility: visible;
+            }
+
+            #printSection {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body ng-app="plumApp">
+    <form id="form1" runat="server">
+        <div id="container">
+            <div id="header">
+                <div class="text" style="text-align: center">
+                    <h1>PLU Ingredients & Nutrition</h1>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="http://pignet/beginpage.asp">Home</a>
+                <a href="http://pignet/Programs/Programs.asp">Programs</a>
+                <a href="plu.aspx">PLU Search</a>
+            </div>
+            <div id="main">
+                <div id="nav">
+                    <%If permissionType = "Store" Then%>
+                    <a href="http://pignet/beginpage.asp" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="http://pignet/Programs/Programs(store).htm" class="button">Programs</a>
+                    <a href="http://pignet/information/information(store).htm" class="button">General Info</a>
+                    <a href="http://pignet/web_extras/web_security/browsing.asp?Path=E:/web/information/forms/Employee Info and Forms/" class="button">Employee Info</a>
+                    <a href="http://pignet/Web_Links/Links.htm" class="button">Web Links</a>
+                    <a href="http://pignet/web_extras/web_security/browsing.asp?Path=E:/web/information/Store Signage/" class="button">Store Signage</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Corporate" Then%>
+                    <a href="http://pignet/beginpage.asp" class="button">Home</a>
+                    <a href="http://vg-fortis2012/FortisWeb" class="button">Fortis</a>
+                    <a href="http://pignet/Programs/Programs.asp" class="button">Programs</a>
+                    <a href="http://pignet/production/calendar/caleditor.asp" class="button">Meeting Rooms</a>
+                    <a href="http://pignet/web_extras/web_security/browsing.asp?Path=E:/web/information/forms/Employee Info and Forms/" class="button">Employee Info</a>
+                    <a href="../../information/information.htm" class="button">General Info</a>
+                    <a href="http://pignet/web_extras/web_security/browsing.asp?path=E:/web/Project%20Websites/RSP%20Web/Meeting%20Notes/" class="button">Project Info</a>
+                    <a href="http://vg-techsrv.sso.com/" class="button">BSSG Website</a>
+                    <a href="http://pignet/Web_Links/Links.htm" class="button">Web Links</a>
+                    <a href="http://pignet/web_extras/web_security/browsing.asp?Path=E:/web/information/Store Signage/" class="button">Store Signage</a>
+                    <a href="http://pignet/production/magic3/helpdesk.asp" class="button">Help Desk Rpt</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%ElseIf permissionType = "Vendor" Then%>
+                    <a href="http://pignet/beginpage.asp" class="button">Home</a>
+                    <a href="http://pignet/information/information(vendor).htm" class="button">General Info</a>
+                    <a href="http://www.shopthepig.com" class="button">Piggly Wiggly</a>
+                    <%End If%>
+                </div>
+                <div id="content">
+                    <div class="onerow">
+                        <div class="col12" style="text-align: center; padding-top: 25px; padding-bottom: 25px;">
+                            There are <%=totalRecs%> PLUs in the database.
+                        </div>
+                    </div>
+                    <div class="onerow" id="pluPicker" ng-controller="pluModalCtrl">
+                        <script type="text/ng-template" ng-include="'PLU-Data.html'"></script>
+                        <script type="text/ng-template" id="pluChoices.html">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Choose a PLU</h3>
+                            </div>
+                            <div class="modal-body">
+                                There are multiple PLUs with that PLU number. Please choose one PLU to view.
+                                <br />
+                                <br />
+                                <ul>
+                                    <li ng-repeat="plu in productData">
+                                        <button type="button" class="btn btn-primary" ng-click="select(plu.PLU, plu.Dept)">({{plu.Dept}}) {{plu.PLU}} -- {{plu.Desc1}} {{plu.Desc2}}</button>
+                                        <br />
+                                        <br />
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger" type="button" ng-click="dismiss()">Cancel</button>
+                            </div>
+                        </script>
+                        <div class="col3">
+                            <br />
+                            <asp:HiddenField ClientIDMode="Static" ID="nutritionData" runat="server" />
+                        </div>
+                        <div class="col6">
+                            <asp:Table ID="PLUtable" runat="server" CellPadding="10" CellSpacing="5">
+                                <asp:TableRow>
+                                    <asp:TableCell>
+                                        PLU to Search: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <input type="text" id="pluTxt" ng-keypress="checkSubmit($event)" />
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                                <asp:TableRow>
+                                    <asp:TableCell>
+                                        PLU Description:
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:Panel ID="descPanel" runat="server" DefaultButton="btnDescSearch">
+                                            <asp:TextBox ID="desctxt" runat="server"></asp:TextBox>
+                                            <asp:Button ID="btnDescSearch" runat="server" OnClick="LoadPLUs" style="display: none;" />
+                                        </asp:Panel>
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                                <asp:TableRow>
+                                    <asp:TableCell>
+                                        Select Department: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:DropDownList ID="deptlist" runat="server" ClientIDMode="Static" AutoPostBack="true" OnSelectedIndexChanged="LoadPLUs"></asp:DropDownList>
+                                        <asp:CheckBox ID="orderPLU" runat="server" Text="Sort by PLU" AutoPostBack="true" OnCheckedChange="LoadPLUs" />
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                                <asp:TableRow ID="PLUrow" runat="server" Visible="false">
+                                    <asp:TableCell>
+                                        PLU - Description: 
+                                    </asp:TableCell>
+                                    <asp:TableCell>
+                                        <asp:DropDownList ID="PLUlist" Width="100%" runat="server" ClientIDMode="Static" ng-change="submitPLU()" ng-model="pluno"></asp:DropDownList>
+                                    </asp:TableCell>
+                                </asp:TableRow>
+                            </asp:Table>
+                        </div>
+                        <div class="col3">
+                            <br />
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div id="footer">
+                <%= DateTime.Now.ToLongDateString()%>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,16 @@
+﻿angular.module('plumApp', ['ngAnimate', 'ui.bootstrap']);
+
+angular.module('plumApp').controller('pluModalCtrl', function ($scope, $uibModal) {
+
+    $scope.productData = {};
+
+    $scope.loadData = function () {
+        $scope.productData = JSON.parse(document.getElementById('nutritionData').value)
+
+        var pluInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'PLU-Data.html',
+            controller: 'pluModalCtrl',
+        });
+    };
+});

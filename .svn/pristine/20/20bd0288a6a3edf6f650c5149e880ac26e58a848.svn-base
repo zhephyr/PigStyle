@@ -1,0 +1,13 @@
+﻿angular.module('inventoryApp', ['ngAnimate', 'ui.bootstrap']);
+
+angular.module('inventoryApp').controller('inventoryModalCtrl', function ($scope, $uibModal, $http) {
+    $scope.today = function () {
+        $scope.startDate = new Date();
+        $scope.endDate = new Date();
+    };
+    $scope.today();
+
+    $scope.openStart = function () {
+
+    };
+});

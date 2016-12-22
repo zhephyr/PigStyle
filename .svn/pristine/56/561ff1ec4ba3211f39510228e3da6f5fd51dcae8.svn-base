@@ -1,0 +1,164 @@
+﻿angular.module('accInvApp', ['ngAnimate', 'ui.bootstrap', 'darthwade.loading']);
+
+angular.module('accInvApp').controller('accInvCtrl', function ($scope, $uibModal, $http, $loading) {
+    $scope.today = function () {
+        $scope.startDate = new Date();
+        $scope.endDate = new Date();
+    };
+    $scope.today();
+
+    $scope.pageOptions = {
+        areBoxes: false,
+        areStores: false,
+        isSelection: false,
+    };
+
+    $scope.popStart = {
+        opened: false,
+    };
+
+    $scope.popEnd = {
+        opened: false,
+    };
+
+    $scope.openStart = function () {
+        $scope.popStart.opened = true;
+    };
+
+    $scope.openEnd = function () {
+        $scope.popEnd.opened = true;
+    };
+
+    $scope.selection = {
+        year: null,
+        boxType: null,
+        storeNo: null,
+    };
+
+    $http.post('InventorySearch.aspx/PopulateYearList', { responseType: 'json' }).
+    then(function (response) {
+        $scope.yearList = JSON.parse(response.data.d);
+    });
+
+    $scope.selectYear = function () {
+        $scope.startDate = new Date($scope.selection.year, 0, 1);
+        $scope.endDate = new Date($scope.selection.year, 11, 31);
+        $scope.submitDates();
+    };
+
+    $scope.submitDates = function () {
+        $http.post('InventorySearch.aspx/GetBoxTypes', angular.toJson({ startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.boxTypes = JSON.parse(response.data.d);
+            $scope.pageOptions.isSelection = true;
+
+            if ($scope.boxTypes.length != 0) {
+                $scope.pageOptions.areBoxes = true;
+            }
+
+            $scope.getPalletNo();
+        });
+    };
+
+    $scope.submitType = function () {
+        $http.post('InventorySearch.aspx/GetStoreNo', angular.toJson({ boxType: $scope.selection.boxType, startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.storeNums = JSON.parse(response.data.d);
+
+            if ($scope.storeNums.length != 0) {
+                $scope.pageOptions.areStores = true;
+            }
+
+            $scope.getPalletNo();
+        });
+    };
+
+    $scope.getPalletNo = function () {
+        $loading.start('pallets');
+
+        $http.post('InventorySearch.aspx/GetPalletNo', angular.toJson({ storeNo: $scope.selection.storeNo, boxType: $scope.selection.boxType, startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.palletNo = response.data.d;
+
+            $loading.finish('pallets');
+        });
+    };
+
+    $scope.resetPage = function () {
+        $scope.selection.year = "";
+        $scope.startDate = new Date();
+        $scope.endDate = new Date();
+        $scope.selection.boxType = "";
+        $scope.selection.storeNo = "";
+        $scope.pageOptions.isSelection = false;
+        $scope.pageOptions.areBoxes = false;
+        $scope.pageOptions.areStores = false;
+    };
+
+    $scope.submitSearch = function () {
+        $http.post('InventorySearch.aspx/GetPalletData', angular.toJson({ storeNo: $scope.selection.storeNo, boxType: $scope.selection.boxType, startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+            $scope.modalInfo = JSON.parse(response.data.d);
+
+            var modalInstance = $uibModal.open({
+                animation: true,
+                templateUrl: 'accounting-file-pallet-modal.html',
+                controller: 'accInvModalInstanceCtrl',
+                size: 'lg',
+                resolve: {
+                    modalInfo: function () {
+                        return $scope.modalInfo;
+                    }
+                }
+            });
+
+            modalInstance.rendered.then(function () {
+                $('.modal-body img').zoomify({ scale: .95 });
+            });
+        });
+    };
+});
+
+angular.module('accInvApp').controller('accInvModalInstanceCtrl', function ($scope, $uibModalInstance, $uibModal, modalInfo) {
+    $scope.modalInfo = modalInfo;
+    $scope.totalPages = $scope.modalInfo.length;
+    $scope.currentPage = 1;
+    $scope.palletInfo = $scope.modalInfo[$scope.currentPage - 1];
+
+    $scope.checkSelection = function (location, boxInfo) {
+        $scope.selectedInfo = {
+            location: location,
+            boxInfo: boxInfo,
+        }
+
+        var submodalInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'selected-file-modal.html',
+            controller: 'selectedModalCtrl',
+            resolve: {
+                selectedInfo: function () {
+                    return $scope.selectedInfo;
+                }
+            }
+        });
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+});
+
+angular.module('accInvApp').controller('selectedModalCtrl', function ($scope, $uibModalInstance, $http, selectedInfo) {
+    $scope.selectedInfo = selectedInfo;
+
+    $scope.submitSelection = function () {
+        $http.post('InventorySearch.aspx/SubmitSelection', angular.toJson({ boxID: $scope.selectedInfo.boxInfo.boxID })).
+        then(function (response) {
+            alert(response.data.d);
+        });
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+});

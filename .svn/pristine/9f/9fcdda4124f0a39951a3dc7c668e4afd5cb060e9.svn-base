@@ -1,0 +1,4 @@
+﻿angular.module('hansenApp', ['ngAnimate', 'ui.bootstrap']);
+angular.module('hansenApp').controller('DatepickerCtrl', function ($scope) {
+
+});

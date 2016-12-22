@@ -1,0 +1,51 @@
+﻿angular.module('inventoryApp', ['ngAnimate', 'ui.bootstrap']);
+
+angular.module('inventoryApp').controller('inventoryModalCtrl', function ($scope, $uibModal, $http) {
+    $scope.today = function () {
+        $scope.startDate = new Date();
+        $scope.endDate = new Date();
+    };
+    $scope.today();
+
+    $scope.pageOptions = {
+        areBoxes: false,
+        areStores: false,
+        isSelection: false,
+    };
+
+    $scope.popStart = {
+        opened: false,
+    };
+
+    $scope.popEnd = {
+        opened: false,
+    };
+
+    $scope.openStart = function () {
+        $scope.popStart.opened = true;
+    };
+
+    $scope.openEnd = function () {
+        $scope.popEnd.opened = true;
+    };
+
+    $scope.selection = {
+        year: null,
+        boxType: null,
+        storeNo: null,
+    };
+
+    $scope.selectYear = function () {
+        year = $scope.selection.year;
+
+        if (year != "Select Year") {
+            $scope.startDate = new Date(year, 0, 1);
+            $scope.endDate = new Date(year, 11, 31);
+        }
+
+        $http.post('InventorySearch.aspx/CheckDuplicates', angular.toJson({ startDate: $scope.startDate, endDate: $scope.endDate, })).
+        then(function (response) {
+
+        });
+    };
+});

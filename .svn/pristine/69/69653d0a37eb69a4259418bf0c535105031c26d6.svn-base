@@ -1,0 +1,31 @@
+﻿var LateTransSum = angular.module('LateSumApp', ['ngAnimate', 'ui.bootstrap', 'darthwade.loading']);
+
+LateTransSum.controller('LSCtrl', function ($scope, $http, $filter, $loading, $uibModal) {
+    $scope.dateOptions = {
+        showWeeks: false,
+        minDate: new Date(2006, 0, 25),
+    };
+
+    $scope.altInputFormats = ['M!/d!/yyyy'];
+
+    $scope.fromDate = {
+        dt: Date.now(),
+        opened: false,
+    };
+
+    $scope.toDate = {
+        dt: Date.now(),
+        opened: false,
+    };
+
+    $scope.openFrom = function () {
+        $scope.fromDate.opened = true;
+    };
+
+    $scope.openTo = function () {
+        $scope.toDate.opened = true;
+    };
+
+    $scope.perTarget = 0;
+    $scope.selectedDept = 'all';
+});

@@ -1,0 +1,133 @@
+﻿function StoreEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateStore(e);
+    }
+}
+function validateStore(e){
+    var num = parseInt(document.getElementById('<%=txtStoreNum.clientID%>').value,10);
+    var length = parseInt(document.getElementById('<%=txtStoreNum.clientID%>').value.length);
+    if (isNaN(num))
+    {
+        document.getElementById('<%=txtStoreNum.clientID%>').value= "";
+        window.alert('Enter a Store Number!');
+        document.getElementById('<%=txtStoreNum.clientID%>').focus();
+        return false;
+    }
+    else if (length > 3 || length < 3)
+    {
+        document.getElementById('<%=txtStoreNum.clientID%>').value= "";
+        window.alert('Enter a Store Number');
+        document.getElementById('<%=txtStoreNum.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        var btn = document.getElementById('<%=btnHidden2.clientID%>');
+        btn.click();
+        return true;
+    }
+}
+function MoveToCode(e){
+    document.getElementById('<%=txtCode.clientID%>').focus();
+    return true;
+}
+function CodeEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateCode(e);
+    }
+}
+function validateCode(e){
+    var Code = parseInt(document.getElementById('<%=txtCode.clientID%>').value,10);
+    if (isNaN(Code) || (Code < 10000 || Code > 99999)) 
+    {
+        document.getElementById('<%=txtCode.clientID%>').value= "";
+        window.alert('Enter an acceptable range (10000 - 99999) for code number');
+        document.getElementById('<%=txtCode.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        var btn = document.getElementById('<%=btnHidden.clientID%>');
+        btn.click();
+        return true;
+    }
+}
+function ReamPackEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateReamPack(e);
+    }
+}
+function validateReamPack(e){
+    var ReamPack = parseInt(document.getElementById('<%=txtReamPack.clientID%>').value,10);
+    if (isNaN(ReamPack) || (ReamPack < 1 || ReamPack > 2500))
+    {
+        document.getElementById('<%=txtReamPack.clientID%>').value= "";
+        window.alert('Enter an acceptable range (1 - 2500) for Ream Pack');
+        document.getElementById('<%=txtReamPack.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        document.getElementById('<%=txtReams.clientID%>').focus();
+        return true;
+    }
+}
+function ReamsEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        validateReams(e);
+    }
+}
+function validateReams(e){
+    var Reams = parseInt(document.getElementById('<%=txtReams.clientID%>').value,10);
+    if (isNaN(Reams) || (Reams < 1 || Reams > 999)) 
+    {
+        document.getElementById('<%=txtReams.clientID%>').value= "";
+        window.alert('Enter an acceptable range (1 - 999) for Reams used');
+        document.getElementById('<%=txtReams.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        document.getElementById('<%=txtComments.clientID%>').focus();
+        return true;
+    }
+}
+function CommentsEnter(e){
+    if (e.keyCode == 13 || e.which == 13){
+        var btn = document.getElementById('<%=btnHidden2.clientID%>');
+        btn.click();
+    
+    }
+}
+function validateComments(e){
+    var Reams = parseInt(document.getElementById('<%=txtReams.clientID%>').value,10);
+    var Description = document.getElementById('<%=lstDescription.clientID%>').value;
+    var ReamPack = parseInt(document.getElementById('<%=txtReamPack.clientID%>').value,10);
+    if (isNaN(Reams) || (Reams < 1 || Reams > 999)) 
+    {
+        document.getElementById('<%=txtReams.clientID%>').value= "";
+        window.alert('Enter an acceptable range (1 - 999) for Reams used');
+        document.getElementById('<%=txtReams.clientID%>').focus();
+        return false;
+    }
+    else if (/$^/.test(Description))
+    {
+        document.getElementById('<%=lstDescription.clientID%>').value= "";
+        window.alert('Please Select A Description');
+        document.getElementById('<%=lstDescription.clientID%>').focus();
+        return false;
+    }
+    else if (isNaN(ReamPack) || (ReamPack < 1 || ReamPack > 2500)) 
+    {
+        document.getElementById('<%=txtReamPack.clientID%>').value= "";
+        window.alert('Enter an acceptable range (1 - 2500) for Ream Packs');
+        document.getElementById('<%=txtReamPack.clientID%>').focus();
+        return false;
+    }
+    else
+    {
+        var btn = document.getElementById('<%=btnLoadGrid.clientID%>');
+        btn.click();
+        return true;
+    }
+}
